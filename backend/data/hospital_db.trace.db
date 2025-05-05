@@ -1,0 +1,18 @@
+2025-04-25 00:31:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "\000d\000a    create table medical_record_vitals (\000d\000a        record_id bigint not null,\000d\000a        name varchar(255),\000d\000a        recorded_at timestamp(6),\000d\000a        unit varchar(255),\000d\000a        [*]value varchar(255)\000d\000a    )"; expected "identifier"; SQL statement:
+
+    create table medical_record_vitals (
+        record_id bigint not null,
+        name varchar(255),
+        recorded_at timestamp(6),
+        unit varchar(255),
+        value varchar(255)
+    ) [42001-214]
+2025-04-25 00:31:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-214]
+2025-04-25 00:31:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-214]
+2025-04-25 00:31:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-214]
+2025-04-25 00:31:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-214]

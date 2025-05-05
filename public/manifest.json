@@ -1,0 +1,16 @@
+{
+  "name": "Medicare Pro - Hospital Management System",
+  "short_name": "Medicare Pro",
+  "description": "Modern healthcare management solution for hospitals and clinics of all sizes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+} 
