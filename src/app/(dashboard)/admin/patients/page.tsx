@@ -221,12 +221,12 @@ export default function PatientsPage() {
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
-              <button 
+              {/* <button 
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
                 onClick={() => router.push('/admin/patients/register')}
               >
                 Register New Patient
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

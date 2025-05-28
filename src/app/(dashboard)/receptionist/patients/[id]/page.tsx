@@ -94,17 +94,17 @@ export default function ViewPatientPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Personal Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Patient ID</p>
-                    <p className="font-medium">{patient.patientId}</p>
+                    <p className=" text-gray-900 font-medium">Patient ID</p>
+                    <p className="text-sm font-medium text-gray-700">{patient.patientId}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Status</p>
-                    <p className="font-medium">
+                    <p className=" text-gray-700 font-medium">Status</p>
+                    <p className="text-sm font-medium">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${patient.status === "Active"
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${patient.status === "Active"
                             ? "bg-green-100 text-green-800"
                             : patient.status === "Discharged"
                               ? "bg-yellow-100 text-yellow-800"
@@ -116,22 +116,22 @@ export default function ViewPatientPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Date of Birth</p>
-                    <p className="font-medium">
+                    <p className=" text-gray-900 font-medium">Date of Birth</p>
+                    <p className="text-sm font-medium text-gray-700">
                       {patient.dateOfBirth ? formatDateForDisplay(patient.dateOfBirth) : "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Gender</p>
-                    <p className="font-medium">{patient.gender || "N/A"}</p>
+                    <p className=" text-gray-900 font-medium">Gender</p>
+                    <p className="text-sm font-medium text-gray-700">{patient.gender || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Blood Group</p>
-                    <p className="font-medium">{patient.bloodGroup || "Not specified"}</p>
+                    <p className="text-gray-900 font-medium">Blood Group</p>
+                    <p className="font-medium text-gray-700">{patient.bloodGroup || "Not specified"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Registration Date</p>
-                    <p className="font-medium">
+                    <p className="text-gray-900 font-medium">Registration Date</p>
+                    <p className="text-sm font-medium text-gray-700">
                       {patient.registrationDate
                         ? formatDateForDisplay(patient.registrationDate)
                         : "N/A"}
@@ -141,23 +141,23 @@ export default function ViewPatientPage() {
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Contact Information</h3>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{patient.email || "N/A"}</p>
+                    <p className=" text-gray-900 font-medium">Email</p>
+                    <p className="text-sm font-medium text-gray-700">{patient.email || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="font-medium">{patient.phoneNumber || "N/A"}</p>
+                    <p className=" text-gray-900 font-medium">Phone</p>
+                    <p className="text-sm font-medium text-gray-700">{patient.phoneNumber || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Address</p>
-                    <p className="font-medium">{patient.address || "N/A"}</p>
+                    <p className=" text-gray-900 font-medium">Address</p>
+                    <p className="text-sm font-medium text-gray-700">{patient.address || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Emergency Contact</p>
-                    <p className="font-medium">
+                    <p className=" text-gray-900 font-medium">Emergency Contact</p>
+                    <p className=" text-sm font-medium text-gray-700">
                       {patient.emergencyContactName
                         ? `${patient.emergencyContactName} (${patient.emergencyContactRelation || "Not specified"}) - ${patient.emergencyContactPhone || "No phone"
                         }`
@@ -168,17 +168,17 @@ export default function ViewPatientPage() {
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
-                <h3 className="text-lg font-semibold mb-4">Medical Information</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Medical Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Medical History</p>
-                    <p className="font-medium whitespace-pre-line">
+                    <p className=" text-gray-900 font-medium">Medical History</p>
+                    <p className=" text-sm font-medium text-gray-700 whitespace-pre-line">
                       {patient.medicalHistory || "No medical history recorded"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Allergies</p>
-                    <p className="font-medium whitespace-pre-line">
+                    <p className="text-gray-900 font-medium">Allergies</p>
+                    <p className="text-sm font-medium text-gray-700 whitespace-pre-line">
                       {patient.allergies || "No allergies recorded"}
                     </p>
                   </div>
@@ -186,23 +186,23 @@ export default function ViewPatientPage() {
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
-                <h3 className="text-lg font-semibold mb-4">Insurance Information</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Insurance Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Insurance Provider</p>
-                    <p className="font-medium">
+                    <p className=" text-gray-900 font-medium">Insurance Provider</p>
+                    <p className="text-sm font-medium text-gray-700">
                       {patient.insuranceProvider || "Not provided"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Policy Number</p>
-                    <p className="font-medium">
+                    <p className="text-gray-900 font-medium">Policy Number</p>
+                    <p className=" text-sm font-medium text-gray-700">
                       {patient.insurancePolicyNumber || "Not provided"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Expiry Date</p>
-                    <p className="font-medium">
+                    <p className=" text-gray-900 font-medium">Expiry Date</p>
+                    <p className="text-sm font-medium text-gray-700">
                       {patient.insuranceExpiryDate || "Not provided"}
                     </p>
                   </div>

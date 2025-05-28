@@ -2,80 +2,231 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AdminService from "@/services/admin.service";
+import Pagination from "@/components/Pagination";
+import SortableHeader from "@/components/SortableHeader";
+
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  isActive: boolean;
+}
+
+interface Receptionist {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  originalUser: User;
+}
+
+interface PaginatedResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}
 
 export default function ReceptionistsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [shiftFilter, setShiftFilter] = useState("all");
-  const [receptionists, setReceptionists] = useState([]);
+  const [receptionists, setReceptionists] = useState<Receptionist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10
+  });
+  const [sort, setSort] = useState({
+    key: "firstName",
+    direction: "asc" as "asc" | "desc",
+  });
+
   useEffect(() => {
     const fetchReceptionists = async () => {
       try {
         setLoading(true);
-        console.log("Fetching receptionists...");
-        const allUsers = await AdminService.getUsers({ role: "RECEPTIONIST" });
-        console.log("Fetched receptionist users:", allUsers);
-        
-        // Transform the users data to match the receptionist structure
-        const formattedReceptionists = allUsers.map(user => ({
+        const sortParam = `${sort.key},${sort.direction}`;
+        console.log('Fetching receptionists with params:', {
+          page: pagination.currentPage - 1,
+          size: pagination.itemsPerPage,
+          sort: sortParam,
+          search: searchQuery,
+          active: statusFilter === "all" ? undefined : statusFilter === "Active"
+        });
+
+        const response = await AdminService.getUsers({
+          role: "RECEPTIONIST",
+          page: pagination.currentPage - 1,
+          size: pagination.itemsPerPage,
+          sort: sortParam,
+          search: searchQuery,
+          active: statusFilter === "all" ? undefined : statusFilter === "Active"
+        });
+
+        console.log('Received response:', response);
+
+        if (!response) {
+          throw new Error("No response received from server");
+        }
+
+        // Handle both array and paginated response formats
+        const content = Array.isArray(response) ? response : response.content;
+        const totalPages = response.totalPages || Math.ceil(content.length / pagination.itemsPerPage);
+        const totalElements = response.totalElements || content.length;
+
+        if (!Array.isArray(content)) {
+          throw new Error("Invalid response format: content is not an array");
+        }
+
+        // Sort the data based on the current sort state
+        const sortedContent = [...content].sort((a, b) => {
+          if (sort.key === 'firstName') {
+            // Sort by full name (firstName + lastName)
+            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            return sort.direction === 'asc' 
+              ? nameA.localeCompare(nameB)
+              : nameB.localeCompare(nameA);
+          }
+
+          // Default sorting for other fields
+          const valueA = a[sort.key as keyof User];
+          const valueB = b[sort.key as keyof User];
+          
+          if (typeof valueA === 'string' && typeof valueB === 'string') {
+            return sort.direction === 'asc'
+              ? valueA.localeCompare(valueB)
+              : valueB.localeCompare(valueA);
+          }
+          
+          if (typeof valueA === 'number' && typeof valueB === 'number') {
+            return sort.direction === 'asc'
+              ? valueA - valueB
+              : valueB - valueA;
+          }
+          
+          if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
+            return sort.direction === 'asc'
+              ? (valueA === valueB ? 0 : valueA ? -1 : 1)
+              : (valueA === valueB ? 0 : valueA ? 1 : -1);
+          }
+
+          return 0;
+        });
+
+        // If the response is an array and not paginated, manually paginate it
+        const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
+        const endIndex = startIndex + pagination.itemsPerPage;
+        const paginatedContent = Array.isArray(response) 
+          ? sortedContent.slice(startIndex, endIndex) 
+          : sortedContent;
+
+        console.log('Sorted and paginated content:', {
+          startIndex,
+          endIndex,
+          totalItems: content.length,
+          itemsPerPage: pagination.itemsPerPage,
+          currentPage: pagination.currentPage,
+          totalPages,
+          sortKey: sort.key,
+          sortDirection: sort.direction
+        });
+
+        const formattedReceptionists = paginatedContent.map((user: User) => ({
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
           phone: user.phoneNumber || "N/A",
-          shift: user.shift || "Not specified",
-          joinDate: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : "Unknown",
           status: user.isActive ? "Active" : "Inactive",
-          // Original user data for reference
           originalUser: user
         }));
-        
-        console.log("Formatted receptionists:", formattedReceptionists);
+
         setReceptionists(formattedReceptionists);
+        setPagination(prev => ({
+          ...prev,
+          totalPages,
+          totalItems: totalElements
+        }));
         setError("");
       } catch (err) {
         console.error("Error fetching receptionists:", err);
-        setError("Failed to load receptionists data. Please try again.");
+        setError(err instanceof Error ? err.message : "Failed to load receptionists data. Please try again.");
+        setReceptionists([]);
+        setPagination(prev => ({
+          ...prev,
+          totalPages: 1,
+          totalItems: 0
+        }));
       } finally {
         setLoading(false);
       }
     };
 
-    // Fetch receptionists on initial load or when refresh parameter changes
-    const refreshParam = searchParams.get('refresh');
     fetchReceptionists();
-  }, [searchParams]);
+  }, [pagination.currentPage, sort, searchQuery, statusFilter]);
 
-  // Get unique shifts for filter - only using shifts from actual data
-  const shifts = [...new Set(receptionists
-    .filter(receptionist => receptionist.shift && receptionist.shift !== "Not specified")
-    .map(receptionist => receptionist.shift))];
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, currentPage: page }));
+  };
 
-  const filteredReceptionists = receptionists
-    .filter(receptionist => 
-      (statusFilter === "all" || receptionist.status === statusFilter) &&
-      (shiftFilter === "all" || receptionist.shift === shiftFilter) &&
-      (searchQuery === "" || 
-       receptionist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       receptionist.email.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-    
-  const handleToggleStatus = async (receptionist) => {
+  const handleSort = (key: string) => {
+    console.log('Sorting by:', key);
+    setSort(prev => {
+      const newDirection = prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc';
+      console.log('New sort direction:', newDirection);
+      return {
+        key,
+        direction: newDirection
+      };
+    });
+  };
+
+  const handleToggleStatus = async (receptionist: Receptionist) => {
     try {
       if (!receptionist.originalUser) return;
       
-      // Toggle the active status
       const newStatus = !receptionist.originalUser.isActive;
       await AdminService.updateUser(receptionist.originalUser.id, { isActive: newStatus });
       
-      // Refresh the receptionists list
-      router.push(`/admin/receptionists?refresh=${Date.now()}`);
+      // Refresh the current page
+      const response = await AdminService.getUsers({
+        role: "RECEPTIONIST",
+        page: pagination.currentPage,
+        size: pagination.itemsPerPage,
+        sort: `${sort.key},${sort.direction}`,
+        search: searchQuery,
+        active: statusFilter === "all" ? undefined : statusFilter === "Active"
+      }) as PaginatedResponse<User>;
+
+      if (!response || !Array.isArray(response.content)) {
+        throw new Error("Invalid response format from server");
+      }
+
+      const formattedReceptionists = response.content.map((user: User) => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        phone: user.phoneNumber || "N/A",
+        status: user.isActive ? "Active" : "Inactive",
+        originalUser: user
+      }));
+
+      setReceptionists(formattedReceptionists);
+      setPagination(prev => ({
+        ...prev,
+        totalPages: response.totalPages,
+        totalItems: response.totalElements
+      }));
     } catch (err) {
       console.error("Error updating receptionist status:", err);
       alert("Failed to update receptionist status. Please try again.");
@@ -97,10 +248,13 @@ export default function ReceptionistsPage() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search receptionists..."
+                placeholder="Search by name or email..."
                 className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
               />
               <svg
                 className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
@@ -116,33 +270,18 @@ export default function ReceptionistsPage() {
                 />
               </svg>
             </div>
-            <div className="flex space-x-2">
-              <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                value={shiftFilter}
-                onChange={(e) => setShiftFilter(e.target.value)}
-              >
-                <option value="all">All Shifts</option>
-                {shifts.map(shift => (
-                  <option key={shift} value={shift}>{shift}</option>
-                ))}
-              </select>
-              <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <button 
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-                onClick={() => router.push('/admin/staff/new?role=RECEPTIONIST')}
-              >
-                Add New Receptionist
-              </button>
-            </div>
+            <select
+              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
+            >
+              <option value="all">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
         </div>
         
@@ -156,24 +295,46 @@ export default function ReceptionistsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Information</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('id')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>ID</span>
+                        <span className="text-xs">{sort.key === 'id' ? (sort.direction === 'asc' ? '↑' : '↓') : '↕️'}</span>
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('firstName')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Name</span>
+                        <span className="text-xs">{sort.key === 'firstName' ? (sort.direction === 'asc' ? '↑' : '↓') : '↕️'}</span>
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('isActive')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Status</span>
+                        <span className="text-xs">{sort.key === 'isActive' ? (sort.direction === 'asc' ? '↑' : '↓') : '↕️'}</span>
+                      </div>
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredReceptionists.map((receptionist) => (
+                  {receptionists.map((receptionist) => (
                     <tr key={receptionist.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{receptionist.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{receptionist.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{receptionist.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div>{receptionist.email}</div>
                         <div>{receptionist.phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{receptionist.shift}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{receptionist.joinDate}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           receptionist.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -184,7 +345,7 @@ export default function ReceptionistsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                         <button 
                           className="text-indigo-600 hover:text-indigo-900"
-                          onClick={() => router.push(`/admin/staff/${receptionist.id}`)}
+                          onClick={() => router.push(`/admin/receptionists/${receptionist.id}`)}
                         >
                           Edit
                         </button>
@@ -201,17 +362,19 @@ export default function ReceptionistsPage() {
               </table>
             </div>
             
-            {filteredReceptionists.length === 0 && (
+            {receptionists.length === 0 && (
               <div className="text-center py-4 text-gray-500">
                 No receptionists found matching your criteria.
               </div>
             )}
             
-            <div className="mt-4 flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{filteredReceptionists.length}</span> of <span className="font-medium">{receptionists.length}</span> receptionists
-              </div>
-            </div>
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              itemsPerPage={pagination.itemsPerPage}
+              onPageChange={handlePageChange}
+            />
           </>
         )}
       </div>

@@ -108,7 +108,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
               placeholder="e.g., Pfizer Inc."
             />
           </div>
@@ -124,7 +124,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
               placeholder="e.g., contact@company.com"
             />
           </div>
@@ -140,7 +140,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
               value={formData.phone}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
               placeholder="e.g., +1 (123) 456-7890"
             />
           </div>
@@ -155,7 +155,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
               name="website"
               value={formData.website}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
               placeholder="e.g., https://www.company.com"
             />
           </div>
@@ -170,7 +170,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
               name="contactPerson"
               value={formData.contactPerson}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
               placeholder="e.g., John Smith"
             />
           </div>
@@ -185,7 +185,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
               name="registrationNumber"
               value={formData.registrationNumber}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
               placeholder="e.g., REG123456"
             />
           </div>
@@ -202,7 +202,7 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
             onChange={handleChange}
             required
             rows="2"
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
             placeholder="Enter full company address..."
           ></textarea>
         </div>
@@ -217,24 +217,24 @@ const CompanyForm = ({ onSuccess, onCancel, company = null }) => {
             value={formData.description}
             onChange={handleChange}
             rows="3"
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 px-4 py-2.5 text-gray-900"
             placeholder="Enter company description..."
           ></textarea>
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-3 mt-6">
+        <div className="flex justify-end space-x-4 mt-6">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             disabled={loading}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
             disabled={loading}
           >
             {loading ? "Saving..." : company ? "Update Company" : "Add Company"}

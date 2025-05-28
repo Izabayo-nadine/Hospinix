@@ -4,11 +4,11 @@ const axios = require("axios");
 async function testBackend() {
   try {
     console.log(
-      "Testing connection to backend at http://localhost:8081/auth/login..."
+      "Testing connection to backend at http://localhost:8080/auth/login..."
     );
 
     const response = await axios.post(
-      "http://localhost:8081/auth/login",
+      "http://localhost:8080/auth/login",
       {
         email: "admin@hospital.com",
         password: "admin123",

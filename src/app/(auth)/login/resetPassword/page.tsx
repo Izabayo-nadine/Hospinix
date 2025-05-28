@@ -13,6 +13,7 @@ export default function ResetPassword() {
     throw new Error("Search params not available");
   }
   const token = searchParams.get("token");
+  console.log("this is the token from the url" + token);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +25,11 @@ export default function ResetPassword() {
     }
 
     try {
-      const res = await axios.post("/auth/reset-password", { token, password });
+    const res = await axios.post("http://localhost:8080/auth/reset-password", { token, password },{
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
       setMessage(res.data.message);
       setError("");
       setTimeout(() => router.push("/login"), 2000);
@@ -36,7 +41,7 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <form className="bg-white p-6 rounded shadow-md w-96" onSubmit={handleSubmit}>
-        <h2 className="text-xl font-bold mb-4">Reset Password</h2>
+        <h2 className="text-xl font-bold mb-4 text-black-500">Reset Password</h2>
         {message && <p className="text-green-600 mb-2">{message}</p>}
         {error && <p className="text-red-600 mb-2">{error}</p>}
 

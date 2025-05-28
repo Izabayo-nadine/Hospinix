@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -18,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -32,8 +32,10 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private PasswordResetService resetService;
+    private PasswordEncoder passwordEncoder; // Added
 
+    @Autowired
+    private PasswordResetService resetService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
@@ -46,7 +48,12 @@ public class AuthController {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
 
-            // Check if password is encrypted (if it's not, this is a legacy account)
+            // ✅ Password check using BCrypt
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                logger.warn("Invalid password for email: {}", email);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Invalid email or password"));
+            }
 
             String token = jwtUtil.generateToken(user);
 
@@ -70,13 +77,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        // Check if email already exists
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Email already in use"));
         }
 
-        // Generate a unique userId based on role
         String userId;
         switch (user.getRole().toUpperCase()) {
             case "DOCTOR":
@@ -100,6 +105,8 @@ public class AuthController {
         user.setUpdatedAt(LocalDateTime.now());
         user.setActive(true);
 
+        // ✅ Encrypt password
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         User savedUser = userRepository.save(user);
 
@@ -116,46 +123,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
-        try{
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            // String username = jwtUtil.extractUsername(token);
-         String userId = jwtUtil.extractUserId(token);
-
-            // Optional<User> userOptional = userRepository.findByEmail(username);
-            // if (userOptional.isPresent()) {
-            Optional<User> userOptional = userRepository.findByUserId(userId);
-            if(userOptional.isPresent()&& jwtUtil.validateToken(token, userOptional.get())){
-            User user = userOptional.get();
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("userId", user.getUserId());
-            response.put("firstName", user.getFirstName());
-            response.put("lastName", user.getLastName());
-            response.put("email", user.getEmail());
-            response.put("role", user.getRole());
-
-            return ResponseEntity.ok(response);
-            }
-        }
-
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("valid", false, "message", "Invalid token"));
-
-} catch (Exception e) {
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Map.of("message", "Invalid token"));
-}}
-
-
-
-
     @PostMapping("/create-admin")
     public ResponseEntity<?> createInitialAdmin() {
-        // Check if any admin exists
         long adminCount = userRepository.countByRole("ADMIN");
 
         if (adminCount > 0) {
@@ -168,9 +137,9 @@ public class AuthController {
         admin.setFirstName("Admin");
         admin.setLastName("User");
         admin.setEmail("admin@hospital.com");
-        admin.setPassword("admin123");
 
-        // Encrypt the admin password
+        //  Encrypt the default admin password
+        admin.setPassword(passwordEncoder.encode("admin123"));
 
         admin.setRole("ADMIN");
         admin.setCreatedAt(LocalDateTime.now());
@@ -185,15 +154,53 @@ public class AuthController {
                         "password", "admin123"));
     }
 
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                String userId = jwtUtil.extractUserId(token);
+                Optional<User> userOptional = userRepository.findByUserId(userId);
+
+                if (userOptional.isPresent() && jwtUtil.validateToken(token, userOptional.get())) {
+                    User user = userOptional.get();
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("userId", user.getUserId());
+                    response.put("firstName", user.getFirstName());
+                    response.put("lastName", user.getLastName());
+                    response.put("email", user.getEmail());
+                    response.put("role", user.getRole());
+
+                    return ResponseEntity.ok(response);
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("valid", false, "message", "Invalid token"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid token"));
+        }
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
         resetService.sendResetLink(payload.get("email"));
         return ResponseEntity.ok(Map.of("message", "Reset link sent"));
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+    @RequestMapping(value = "/reset-password", method = {RequestMethod.POST, RequestMethod.OPTIONS})
+    public ResponseEntity<?> resetPassword(@RequestBody(required = false) Map<String, String> payload) {
+        if (payload == null) {
+            // Handle OPTIONS request (return empty response with CORS headers)
+            return ResponseEntity.ok().build();
+        }
+        logger.info("this is the token:  "+payload.get("token"));
+        logger.info("this is the password:  "+payload.get("password"));
         resetService.resetPassword(payload.get("token"), payload.get("password"));
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 }
+

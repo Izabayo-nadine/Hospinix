@@ -2,75 +2,231 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AdminService from "@/services/admin.service";
+import Pagination from "@/components/Pagination";
+import SortableHeader from "@/components/SortableHeader";
+
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  isActive: boolean;
+}
+
+interface Pharmacist {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  originalUser: User;
+}
+
+interface PaginatedResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}
 
 export default function PharmacistsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [pharmacists, setPharmacists] = useState([]);
+  const [pharmacists, setPharmacists] = useState<Pharmacist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10
+  });
+  const [sort, setSort] = useState({
+    key: "firstName",
+    direction: "asc" as "asc" | "desc",
+  });
+
   useEffect(() => {
     const fetchPharmacists = async () => {
       try {
         setLoading(true);
-        console.log("Fetching pharmacists...");
-        const allUsers = await AdminService.getUsers({ role: "PHARMACIST" });
-        console.log("Fetched pharmacist users:", allUsers);
-        
-        // Transform the users data to match the pharmacist structure
-        const formattedPharmacists = allUsers.map(user => ({
+        const sortParam = `${sort.key},${sort.direction}`;
+        console.log('Fetching pharmacists with params:', {
+          page: pagination.currentPage - 1,
+          size: pagination.itemsPerPage,
+          sort: sortParam,
+          search: searchQuery,
+          active: statusFilter === "all" ? undefined : statusFilter === "Active"
+        });
+
+        const response = await AdminService.getUsers({
+          role: "PHARMACIST",
+          page: pagination.currentPage - 1,
+          size: pagination.itemsPerPage,
+          sort: sortParam,
+          search: searchQuery,
+          active: statusFilter === "all" ? undefined : statusFilter === "Active"
+        });
+
+        console.log('Received response:', response);
+
+        if (!response) {
+          throw new Error("No response received from server");
+        }
+
+        // Handle both array and paginated response formats
+        const content = Array.isArray(response) ? response : response.content;
+        const totalPages = response.totalPages || Math.ceil(content.length / pagination.itemsPerPage);
+        const totalElements = response.totalElements || content.length;
+
+        if (!Array.isArray(content)) {
+          throw new Error("Invalid response format: content is not an array");
+        }
+
+        // Sort the data based on the current sort state
+        const sortedContent = [...content].sort((a, b) => {
+          if (sort.key === 'firstName') {
+            // Sort by full name (firstName + lastName)
+            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            return sort.direction === 'asc' 
+              ? nameA.localeCompare(nameB)
+              : nameB.localeCompare(nameA);
+          }
+
+          // Default sorting for other fields
+          const valueA = a[sort.key as keyof User];
+          const valueB = b[sort.key as keyof User];
+          
+          if (typeof valueA === 'string' && typeof valueB === 'string') {
+            return sort.direction === 'asc'
+              ? valueA.localeCompare(valueB)
+              : valueB.localeCompare(valueA);
+          }
+          
+          if (typeof valueA === 'number' && typeof valueB === 'number') {
+            return sort.direction === 'asc'
+              ? valueA - valueB
+              : valueB - valueA;
+          }
+          
+          if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
+            return sort.direction === 'asc'
+              ? (valueA === valueB ? 0 : valueA ? -1 : 1)
+              : (valueA === valueB ? 0 : valueA ? 1 : -1);
+          }
+
+          return 0;
+        });
+
+        // If the response is an array and not paginated, manually paginate it
+        const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
+        const endIndex = startIndex + pagination.itemsPerPage;
+        const paginatedContent = Array.isArray(response) 
+          ? sortedContent.slice(startIndex, endIndex) 
+          : sortedContent;
+
+        console.log('Sorted and paginated content:', {
+          startIndex,
+          endIndex,
+          totalItems: content.length,
+          itemsPerPage: pagination.itemsPerPage,
+          currentPage: pagination.currentPage,
+          totalPages,
+          sortKey: sort.key,
+          sortDirection: sort.direction
+        });
+
+        const formattedPharmacists = paginatedContent.map((user: User) => ({
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
           phone: user.phoneNumber || "N/A",
-          qualification: user.qualification || "Not specified",
-          joinDate: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : "Unknown",
           status: user.isActive ? "Active" : "Inactive",
-          shift: user.shift || "Not specified",
-          // Original user data for reference
           originalUser: user
         }));
-        
-        console.log("Formatted pharmacists:", formattedPharmacists);
+
         setPharmacists(formattedPharmacists);
+        setPagination(prev => ({
+          ...prev,
+          totalPages,
+          totalItems: totalElements
+        }));
         setError("");
       } catch (err) {
         console.error("Error fetching pharmacists:", err);
-        setError("Failed to load pharmacists data. Please try again.");
+        setError(err instanceof Error ? err.message : "Failed to load pharmacists data. Please try again.");
+        setPharmacists([]);
+        setPagination(prev => ({
+          ...prev,
+          totalPages: 1,
+          totalItems: 0
+        }));
       } finally {
         setLoading(false);
       }
     };
 
-    // Fetch pharmacists on initial load or when refresh parameter changes
-    const refreshParam = searchParams.get('refresh');
     fetchPharmacists();
-  }, [searchParams]);
+  }, [pagination.currentPage, sort, searchQuery, statusFilter]);
 
-  const filteredPharmacists = pharmacists
-    .filter(pharmacist => 
-      (statusFilter === "all" || pharmacist.status === statusFilter) &&
-      (searchQuery === "" || 
-       pharmacist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       pharmacist.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       (pharmacist.qualification && pharmacist.qualification.toLowerCase().includes(searchQuery.toLowerCase())))
-    );
-    
-  const handleToggleStatus = async (pharmacist) => {
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, currentPage: page }));
+  };
+
+  const handleSort = (key: string) => {
+    console.log('Sorting by:', key);
+    setSort(prev => {
+      const newDirection = prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc';
+      console.log('New sort direction:', newDirection);
+      return {
+        key,
+        direction: newDirection
+      };
+    });
+  };
+
+  const handleToggleStatus = async (pharmacist: Pharmacist) => {
     try {
       if (!pharmacist.originalUser) return;
       
-      // Toggle the active status
       const newStatus = !pharmacist.originalUser.isActive;
       await AdminService.updateUser(pharmacist.originalUser.id, { isActive: newStatus });
       
-      // Refresh the pharmacists list
-      router.push(`/admin/pharmacists?refresh=${Date.now()}`);
+      // Refresh the current page
+      const response = await AdminService.getUsers({
+        role: "PHARMACIST",
+        page: pagination.currentPage,
+        size: pagination.itemsPerPage,
+        sort: `${sort.key},${sort.direction}`,
+        search: searchQuery,
+        active: statusFilter === "all" ? undefined : statusFilter === "Active"
+      }) as PaginatedResponse<User>;
+
+      if (!response || !Array.isArray(response.content)) {
+        throw new Error("Invalid response format from server");
+      }
+
+      const formattedPharmacists = response.content.map((user: User) => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        phone: user.phoneNumber || "N/A",
+        status: user.isActive ? "Active" : "Inactive",
+        originalUser: user
+      }));
+
+      setPharmacists(formattedPharmacists);
+      setPagination(prev => ({
+        ...prev,
+        totalPages: response.totalPages,
+        totalItems: response.totalElements
+      }));
     } catch (err) {
       console.error("Error updating pharmacist status:", err);
       alert("Failed to update pharmacist status. Please try again.");
@@ -92,10 +248,13 @@ export default function PharmacistsPage() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search pharmacists..."
+                placeholder="Search by name or email..."
                 className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
               />
               <svg
                 className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
@@ -111,23 +270,18 @@ export default function PharmacistsPage() {
                 />
               </svg>
             </div>
-            <div className="flex space-x-2">
-              <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <button 
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-                onClick={() => router.push('/admin/staff/new?role=PHARMACIST')}
-              >
-                Add New Pharmacist
-              </button>
-            </div>
+            <select
+              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
+            >
+              <option value="all">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
         </div>
         
@@ -141,26 +295,46 @@ export default function PharmacistsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Information</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qualification</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('id')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>ID</span>
+                        <span className="text-xs">{sort.key === 'id' ? (sort.direction === 'asc' ? '↑' : '↓') : '↕️'}</span>
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('firstName')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Name</span>
+                        <span className="text-xs">{sort.key === 'firstName' ? (sort.direction === 'asc' ? '↑' : '↓') : '↕️'}</span>
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('isActive')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Status</span>
+                        <span className="text-xs">{sort.key === 'isActive' ? (sort.direction === 'asc' ? '↑' : '↓') : '↕️'}</span>
+                      </div>
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPharmacists.map((pharmacist) => (
+                  {pharmacists.map((pharmacist) => (
                     <tr key={pharmacist.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pharmacist.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pharmacist.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pharmacist.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div>{pharmacist.email}</div>
                         <div>{pharmacist.phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pharmacist.qualification}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pharmacist.shift}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pharmacist.joinDate}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           pharmacist.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -171,7 +345,7 @@ export default function PharmacistsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                         <button 
                           className="text-indigo-600 hover:text-indigo-900"
-                          onClick={() => router.push(`/admin/staff/${pharmacist.id}`)}
+                          onClick={() => router.push(`/admin/pharmacists/${pharmacist.id}`)}
                         >
                           Edit
                         </button>
@@ -188,17 +362,19 @@ export default function PharmacistsPage() {
               </table>
             </div>
             
-            {filteredPharmacists.length === 0 && (
+            {pharmacists.length === 0 && (
               <div className="text-center py-4 text-gray-500">
                 No pharmacists found matching your criteria.
               </div>
             )}
             
-            <div className="mt-4 flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{filteredPharmacists.length}</span> of <span className="font-medium">{pharmacists.length}</span> pharmacists
-              </div>
-            </div>
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              itemsPerPage={pagination.itemsPerPage}
+              onPageChange={handlePageChange}
+            />
           </>
         )}
       </div>

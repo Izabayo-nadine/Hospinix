@@ -6,6 +6,7 @@ import AdminService from "@/services/admin.service";
 import DataService from "@/services/data.service";
 import { useRouter } from "next/navigation";
 import AuthService from "@/services/auth.service";
+import PieChart from "@/components/PieChart";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -104,7 +105,7 @@ export default function AdminDashboard() {
   const fallbackStats = [
     { name: "Total Patients", value: stats.totalPatients || "0" },
     { name: "Total Doctors", value: stats.totalDoctors || "0" },
-    { name: "Total Staff", value: (stats.totalPharmacists + stats.totalReceptionists) || "0" },
+    { name: "Total Staff", value: (stats.totalPharmacists + stats.totalReceptionists+stats.totalDoctors) || "0" },
     { name: "Total Medicines", value: stats.totalMedicines || "0" },
   ];
 
@@ -303,76 +304,21 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Resource Distribution</h3>
-                <div className="bg-gray-50 p-4 rounded-lg h-full">
-                  {/* These values come from the backend */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-500 flex items-center">
-                        All Staff
-                        <span className="ml-1 text-xs text-green-500" title="Live data from backend">
-                          (live)
-                        </span>
-                      </p>
-                      <p className="text-xl font-semibold">
-                        {(stats.totalDoctors + stats.totalPharmacists + stats.totalReceptionists) || "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 flex items-center">
-                        Prescriptions
-                        <span className="ml-1 text-xs text-green-500" title="Live data from backend">
-                          (live)
-                        </span>
-                      </p>
-                      <p className="text-xl font-semibold">{stats.totalPrescriptions || "0"}</p>
-                    </div>
-                  </div>
-                  
-                  <h4 className="text-sm font-medium text-gray-700 mt-4 mb-2 flex items-center">
-                    Appointment Distribution
-                    <span className="ml-1 text-xs text-green-500" title="Live data from backend">
-                      (live)
-                    </span>
-                  </h4>
-                  <div className="flex space-x-2 mb-2 text-xs text-gray-500">
-                    <div className="flex-1">Scheduled</div>
-                    <div className="flex-1">Completed</div>
-                    <div className="flex-1">Cancelled</div>
-                  </div>
-                  <div className="h-10 flex space-x-2">
-                    {/* Calculate percentages based on actual appointment data */}
-                    {(() => {
-                      const total = stats.totalAppointments || 1; // Avoid division by zero
-                      const scheduled = Math.max(5, (stats.scheduledAppointments / total) * 100);
-                      const completed = Math.max(5, (stats.completedAppointments / total) * 100);
-                      const cancelled = Math.max(5, (stats.cancelledAppointments / total) * 100);
-                      
-                      return (
-                        <>
-                          <div className="flex-1">
-                            <div className="bg-green-500 h-6 rounded-t text-white text-center text-xs leading-6" 
-                                style={{ width: '100%', height: `${scheduled}%` }}>
-                              {stats.scheduledAppointments}
-                            </div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="bg-blue-500 h-6 rounded-t text-white text-center text-xs leading-6" 
-                                style={{ width: '100%', height: `${completed}%` }}>
-                              {stats.completedAppointments}
-                            </div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="bg-red-500 h-6 rounded-t text-white text-center text-xs leading-6" 
-                                style={{ width: '100%', height: `${cancelled}%` }}>
-                              {stats.cancelledAppointments}
-                            </div>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
+                {/* <h3 className="text-lg font-medium text-gray-900 mb-4">Resource Distribution</h3> */}
+                <PieChart 
+                  data={{
+                    labels: ['Doctors', 'Pharmacists', 'Receptionists', 'Patients', 'Appointments', 'Medicines'],
+                    values: [
+                      stats.totalDoctors,
+                      stats.totalPharmacists,
+                      stats.totalReceptionists,
+                      stats.totalPatients,
+                      stats.totalAppointments,
+                      stats.totalMedicines
+                    ]
+                  }}
+                  title="Resource Distribution"
+                />
               </div>
             </div>
           )}

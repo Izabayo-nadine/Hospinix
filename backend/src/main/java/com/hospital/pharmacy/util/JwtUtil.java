@@ -1,10 +1,13 @@
 package com.hospital.pharmacy.util;
 
+import com.hospital.pharmacy.controller.AdminController;
 import com.hospital.pharmacy.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +20,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     @Value("${jwt.secret:pharmacy-management-system-jwt-secret-key}")
     private String secret;
@@ -45,6 +49,7 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token, User user) {
+        logger.info("Validating token: " + token);
         final String username = extractUsername(token);
         return (username.equals(user.getEmail()) && !isTokenExpired(token));
     }

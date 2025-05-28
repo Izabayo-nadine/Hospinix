@@ -102,7 +102,6 @@ class PharmacistService {
     }
   }
 
-
   async updateCompany(companyId, companyData) {
     try {
       const response = await api.put(
@@ -379,7 +378,7 @@ class PharmacistService {
 
   async fillPrescription(prescriptionId) {
     try {
-      const response = await api.post(
+      const response = await api.put(
         `/pharmacist/prescriptions/${prescriptionId}/fill`
       );
       return response;
@@ -391,12 +390,28 @@ class PharmacistService {
 
   async getPrescriptionById(prescriptionId) {
     try {
+      console.log(`Fetching prescription details for ID: ${prescriptionId}`);
       const response = await api.get(
-        `/pharmacist/prescriptions/${prescriptionId}`
+        `${API_ENDPOINTS.PRESCRIPTIONS}/${prescriptionId}`
       );
+      console.log("Prescription details response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching prescription details:", error);
+      if (error.response) {
+        if (error.response.status === 403) {
+          throw new Error(
+            "You don't have permission to view this prescription. Please contact your administrator."
+          );
+        }
+        if (error.response.status === 404) {
+          throw new Error(
+            "Prescription not found. It may have been deleted or you may not have access to it."
+          );
+        }
+        console.error("Server error response:", error.response.data);
+        console.error("Status code:", error.response.status);
+      }
       throw error;
     }
   }
@@ -415,7 +430,9 @@ class PharmacistService {
 
   async getLowStockMedicines() {
     try {
-      const response = await api.get(API_ENDPOINTS.LOW_STOCK || API_ENDPOINTS.CRITICAL);
+      const response = await api.get(
+        API_ENDPOINTS.LOW_STOCK || API_ENDPOINTS.CRITICAL
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching low stock medicines:", error);

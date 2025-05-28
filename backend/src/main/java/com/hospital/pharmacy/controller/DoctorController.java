@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/doctor")
@@ -42,6 +43,8 @@ public class DoctorController {
     @Autowired
     private RoomRepository roomRepository;
 
+    private static final Logger logger = Logger.getLogger(DoctorController.class.getName());
+
     // Doctor Dashboard Statistics
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDoctorDashboard(HttpServletRequest request) {
@@ -53,14 +56,13 @@ public class DoctorController {
                     .body(Map.of("message", "Access denied"));
         }
 
-
         LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
 
-
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalPatients", appointmentRepository.countDistinctPatientsByDoctor(doctor.getId()));
-        stats.put("todayAppointments", appointmentRepository.countTodaysAppointmentsByDoctor(doctor.getId(), startOfDay, endOfDay));
+        stats.put("todayAppointments",
+                appointmentRepository.countTodaysAppointmentsByDoctor(doctor.getId(), startOfDay, endOfDay));
         stats.put("totalPrescriptions", prescriptionRepository.countByDoctor(doctor.getId()));
 
         return ResponseEntity.ok(stats);
@@ -111,47 +113,34 @@ public class DoctorController {
         }
     }
 
-
-
-
-
     @GetMapping("/patients")
-public ResponseEntity<?> getDoctorPatients(
-        @RequestParam(required = false) String search,
-        HttpServletRequest request) {
+    public ResponseEntity<?> getDoctorPatients(
+            @RequestParam(required = false) String search,
+            HttpServletRequest request) {
 
-    User doctor = (User) request.getAttribute("user");
-    String role = (String) request.getAttribute("role");
+        User doctor = (User) request.getAttribute("user");
+        String role = (String) request.getAttribute("role");
 
-    if (doctor == null || !role.equals("DOCTOR")) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("message", "Access denied"));
+        if (doctor == null || !role.equals("DOCTOR")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Access denied"));
+        }
+
+        try {
+            List<Patient> patients = appointmentRepository.findDistinctPatientsByDoctorIdAndSearch(
+                    doctor.getId(), search != null ? search.toLowerCase() : null);
+
+            return ResponseEntity.ok(patients);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error retrieving patients: " + e.getMessage()));
+        }
     }
-
-    try {
-        List<Patient> patients = appointmentRepository.findDistinctPatientsByDoctorIdAndSearch(
-            doctor.getId(), search != null ? search.toLowerCase() : null
-        );
-
-        return ResponseEntity.ok(patients);
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Error retrieving patients: " + e.getMessage()));
-    }
-}
-
-
-
-
 
     // Get doctor's appointments
     @GetMapping("/appointments")
     public ResponseEntity<?> getDoctorAppointments(
-
-
-
-
 
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long patientId,
@@ -235,17 +224,16 @@ public ResponseEntity<?> getDoctorPatients(
         }
     }
 
-    
     @GetMapping("/appointments/today")
     public ResponseEntity<?> getAppointmentsToday(
-        @RequestParam(required = false) Long doctorId,
-        HttpServletRequest request
-    ){
-     LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-     LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
-     List<Appointment> appointments = appointmentRepository.findByDoctorAndDateRange(doctorId, startOfDay, endOfDay);
-     return ResponseEntity.ok(appointments);
+            @RequestParam(required = false) Long doctorId,
+            HttpServletRequest request) {
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+        List<Appointment> appointments = appointmentRepository.findByDoctorAndDateRange(doctorId, startOfDay, endOfDay);
+        return ResponseEntity.ok(appointments);
     }
+
     // Complete an appointment and add notes
     @PutMapping("/appointments/{id}/complete")
     public ResponseEntity<?> completeAppointment(
@@ -278,27 +266,77 @@ public ResponseEntity<?> getDoctorPatients(
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/appointments/{id}")
+    public ResponseEntity<?> updateAppointment(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> statusUpdate,
+            HttpServletRequest request) {
 
+        User doctor = (User) request.getAttribute("user");
+        String role = (String) request.getAttribute("role");
+
+        if (doctor == null || !"DOCTOR".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
+        }
+        String newStatus = statusUpdate.get("notes"); // Extract just the status value
+        if (newStatus == null || newStatus.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "notes is required"));
+        }
+
+        return appointmentRepository.findById(id)
+                .map(appointment -> {
+                    appointment.setNotes(newStatus); // Store just the status value
+                    return ResponseEntity.ok(appointmentRepository.save(appointment));
+                })
+                .orElse(ResponseEntity.notFound().build());
+
+    }
+
+    @PutMapping("appointments/{id}/status")
+    public ResponseEntity<?> updateAppointmentStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> statusUpdate,
+            HttpServletRequest request
+
+    ) {
+        User doctor = (User) request.getAttribute("user");
+        String role = (String) request.getAttribute("role");
+
+        if (doctor == null || !"DOCTOR".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
+        }
+
+        String newStatus = statusUpdate.get("status"); // Extract just the status value
+        if (newStatus == null || newStatus.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Status is required"));
+        }
+
+        return appointmentRepository.findById(id)
+                .map(appointment -> {
+                    appointment.setStatus(newStatus); // Store just the status value
+                    return ResponseEntity.ok(appointmentRepository.save(appointment));
+                })
+                .orElse(ResponseEntity.notFound().build());
+
+    }
 
     @GetMapping("/patients/with-appointments")
     public ResponseEntity<?> getDoctorPatientsFromAppointments(HttpServletRequest request) {
         User doctor = (User) request.getAttribute("user");
         String role = (String) request.getAttribute("role");
-    
+
         if (doctor == null || !"DOCTOR".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
         }
-    
+
         List<Patient> patients = appointmentRepository.findDistinctPatientsByDoctorAppointments(doctor.getId());
         return ResponseEntity.ok(patients);
     }
-    
-
-
-
 
     // Create a prescription
-    @PostMapping("/prescriptions")
+    @PostMapping("/prescriptions/create")
     public ResponseEntity<?> createPrescription(
             @RequestBody Prescription prescription,
             HttpServletRequest request) {
@@ -313,6 +351,23 @@ public ResponseEntity<?> getDoctorPatients(
 
         // Set the doctor
         prescription.setDoctor(doctor);
+
+        // Handle appointment ID
+        if (prescription.getAppointment() != null && prescription.getAppointment().getAppointmentId() != null) {
+            String appointmentIdStr = prescription.getAppointment().getAppointmentId();
+            logger.info("Received appointment ID: " + appointmentIdStr);
+
+            // Find appointment by its custom ID (e.g., "APT-ED98AFDE")
+            Optional<Appointment> appointmentOpt = appointmentRepository.findByAppointmentId(appointmentIdStr);
+
+            if (appointmentOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "Invalid appointment ID: " + appointmentIdStr));
+            }
+
+            Appointment appointment = appointmentOpt.get();
+            prescription.setAppointment(appointment);
+        }
 
         // Generate a unique prescription ID
         prescription.setPrescriptionId("PRS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
@@ -659,7 +714,6 @@ public ResponseEntity<?> getDoctorPatients(
         return ResponseEntity.ok(rooms);
     }
 
-    
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<?> getRoomById(@PathVariable String roomId) {
         // Normalize roomId format

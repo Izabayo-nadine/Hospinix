@@ -133,7 +133,6 @@ const localBedsState = [
 ];
 
 const DoctorService = {
-
   getDashboardStats: async () => {
     try {
       console.log("Fetching doctor dashboard stats");
@@ -297,20 +296,16 @@ const DoctorService = {
     return response.data;
   },
 
-
   getPatientsFromAppointments: async () => {
     const res = await api.get("/doctor/patients/with-appointments");
     return res.data;
   },
-  
-
 
   createPrescription: async (prescriptionData) => {
     try {
       console.log("Original prescription data:", prescriptionData);
 
-      // Ensure patientId is correctly formatted for the backend
-      // The backend expects a Patient entity, not just an ID
+      // Ensure patient object is structured properly
       if (prescriptionData.patientId && !prescriptionData.patient) {
         prescriptionData.patient = { id: prescriptionData.patientId };
         console.log(
@@ -319,16 +314,19 @@ const DoctorService = {
         );
       }
 
-      // Check if we have an appointmentId and add the appointment reference if needed
-      if (prescriptionData.appointmentId && !prescriptionData.appointment) {
-        prescriptionData.appointment = { id: prescriptionData.appointmentId };
+      // Handle appointment ID transformation
+      if (prescriptionData.appointmentId) {
+        // Send the appointment ID in the correct format
+        prescriptionData.appointment = {
+          appointmentId: prescriptionData.appointmentId,
+        };
         console.log(
           "Added appointment reference with ID:",
           prescriptionData.appointmentId
         );
       }
 
-      // Make sure these fields are explicitly included
+      // Build final data payload
       const dataToSend = {
         ...prescriptionData,
         medication: prescriptionData.medication || "",
@@ -337,11 +335,23 @@ const DoctorService = {
         duration: prescriptionData.duration || "",
         instructions: prescriptionData.instructions || "",
         notes: prescriptionData.notes || "",
+        // Remove appointmentId from the payload since we've added it to the appointment object
+        appointmentId: undefined,
       };
+
+      // Remove any undefined fields
+      Object.keys(dataToSend).forEach((key) => {
+        if (dataToSend[key] === undefined) {
+          delete dataToSend[key];
+        }
+      });
 
       console.log("Formatted prescription data for API:", dataToSend);
 
-      const response = await api.post("/doctor/prescriptions", dataToSend);
+      const response = await api.post(
+        "/doctor/prescriptions/create",
+        dataToSend
+      );
       console.log("API response for create prescription:", response.data);
       return response.data;
     } catch (error) {
@@ -976,6 +986,14 @@ const DoctorService = {
       }
       throw error;
     }
+  },
+
+  updateAppointmentStatus: async (id, status) => {
+    console.log(`Updating appointment status ${id} to ${status}`);
+    const response = await api.put(`/doctor/appointments/${id}/status`, {
+      status,
+    });
+    return response.data;
   },
 };
 

@@ -6,29 +6,29 @@ const AdminService = {
     return response.data;
   },
 
-  getFacilityData: async () => {
-    try {
-      const response = await api.get("/admin/facility");
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching facility data:", error);
-      throw error;
-    }
-  },
+  // getFacilityData: async () => {
+  //   try {
+  //     const response = await api.get("/admin/facility");
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error("Error fetching facility data:", error);
+  //     throw error;
+  //   }
+  // },
 
   getUsers: async (filters = {}) => {
-    const { role, active, search } = filters;
+    const { role, active, search, page = 1, size = 10, sort } = filters;
     const params = new URLSearchParams();
+
     if (role) params.append("role", role);
-
-    // Send as isActive to match backend expectations
     if (active !== undefined) params.append("isActive", active.toString());
-
     if (search) params.append("search", search);
+    if (page) params.append("page", (page - 1).toString()); // Convert to 0-based index
+    if (size) params.append("size", size.toString());
+    if (sort) params.append("sort", sort);
 
     try {
       const response = await api.get(`/admin/users?${params.toString()}`);
-      // Log the response data for debugging
       console.log("API response data:", response.data);
       return response.data;
     } catch (error) {

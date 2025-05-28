@@ -1,7 +1,7 @@
 // Simple test script to check the API endpoints
 const axios = require("axios");
 
-const API_URL = "http://localhost:8081";
+const API_URL = "http://localhost:8080";
 let token = null;
 
 // Login to get a token

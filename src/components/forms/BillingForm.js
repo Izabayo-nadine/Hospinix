@@ -307,18 +307,18 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {/* Patient Selection */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Patient
+              Patient *
             </label>
             <select
               name="patientId"
               value={formData.patientId}
               onChange={handleChange}
-              disabled={isEdit} // Cannot change patient in edit mode
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              disabled={isEdit}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.patientId ? "border-red-500" : ""
               }`}
             >
@@ -334,17 +334,29 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
             )}
           </div>
 
-          {/* Invoice Dates */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Invoice Date
+              Invoice #
+            </label>
+            <input
+              type="text"
+              value={invoice ? invoice.invoiceNumber : "Auto-generated"}
+              disabled
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50 px-4 py-2.5 text-gray-900"
+            />
+          </div>
+
+          {/* Dates */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Invoice Date *
             </label>
             <input
               type="date"
               name="invoiceDate"
               value={formData.invoiceDate}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.invoiceDate ? "border-red-500" : ""
               }`}
             />
@@ -355,14 +367,14 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Due Date
+              Due Date *
             </label>
             <input
               type="date"
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.dueDate ? "border-red-500" : ""
               }`}
             />
@@ -371,7 +383,7 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
             )}
           </div>
 
-          {/* Payment Information */}
+          {/* Payment Details */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Payment Method
@@ -380,15 +392,65 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
               name="paymentMethod"
               value={formData.paymentMethod}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             >
               <option value="CASH">Cash</option>
               <option value="CREDIT_CARD">Credit Card</option>
               <option value="DEBIT_CARD">Debit Card</option>
-              <option value="INSURANCE">Insurance</option>
               <option value="BANK_TRANSFER">Bank Transfer</option>
-              <option value="CHECK">Check</option>
+              <option value="INSURANCE">Insurance</option>
+              <option value="OTHER">Other</option>
             </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Payment Status
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
+            >
+              <option value="PENDING">Pending</option>
+              <option value="PARTIAL">Partially Paid</option>
+              <option value="PAID">Paid</option>
+              <option value="OVERDUE">Overdue</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Paid Amount
+            </label>
+            <input
+              type="number"
+              name="paidAmount"
+              value={formData.paidAmount}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
+                errors.paidAmount ? "border-red-500" : ""
+              }`}
+            />
+            {errors.paidAmount && (
+              <p className="mt-1 text-xs text-red-500">{errors.paidAmount}</p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Total Amount
+            </label>
+            <input
+              type="number"
+              value={formData.totalAmount}
+              disabled
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50 px-4 py-2.5 text-gray-900"
+            />
           </div>
 
           {/* Notes */}
@@ -401,165 +463,101 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
               value={formData.notes}
               onChange={handleChange}
               rows="2"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
+              placeholder="Additional information or payment instructions"
             ></textarea>
           </div>
+        </div>
 
-          {/* Line Items */}
-          <div className="mb-4 md:col-span-2">
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Invoice Items
-              </label>
+        {/* Bill Items Section */}
+        <div className="mt-8">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Bill Items</h3>
+
+          {errors.items && (
+            <p className="mb-2 text-xs text-red-500">{errors.items}</p>
+          )}
+
+          {/* List of added items */}
+          {formData.items.length > 0 && (
+            <div className="mb-6 overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Description
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Quantity
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Unit Price
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Discount
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Total
+                    </th>
+                    <th scope="col" className="relative px-6 py-3">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {formData.items.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {item.description}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {item.quantity}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        ${item.unitPrice.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {item.discount}%
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                        ${item.total.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          )}
 
-            {errors.items && (
-              <p className="mt-1 mb-2 text-xs text-red-500">{errors.items}</p>
-            )}
-
-            {formData.items.length > 0 ? (
-              <div className="mb-4 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Description
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Qty
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Unit Price
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Discount
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Total
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {formData.items.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          {item.description}
-                        </td>
-                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm text-gray-500">
-                          {item.quantity}
-                        </td>
-                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm text-gray-500">
-                          ${item.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm text-gray-500">
-                          {item.discount}%
-                        </td>
-                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm font-medium text-gray-900">
-                          ${item.total.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            type="button"
-                            onClick={() => removeItem(index)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  {/* Summary rows */}
-                  <tfoot className="bg-gray-50">
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="px-6 py-3 text-right text-sm font-medium text-gray-700"
-                      >
-                        Total Amount
-                      </td>
-                      <td className="px-6 py-3 text-right text-sm font-medium text-gray-900">
-                        ${formData.totalAmount.toFixed(2)}
-                      </td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="px-6 py-3 text-right text-sm font-medium text-gray-700"
-                      >
-                        Paid Amount
-                      </td>
-                      <td className="px-6 py-3 text-right text-sm font-medium text-gray-900">
-                        <input
-                          type="number"
-                          name="paidAmount"
-                          value={formData.paidAmount}
-                          onChange={handleChange}
-                          min="0"
-                          step="0.01"
-                          className={`w-24 text-right rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                            errors.paidAmount ? "border-red-500" : ""
-                          }`}
-                        />
-                      </td>
-                      <td>
-                        {errors.paidAmount && (
-                          <p className="text-xs text-red-500">
-                            {errors.paidAmount}
-                          </p>
-                        )}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="px-6 py-3 text-right text-sm font-bold text-gray-700"
-                      >
-                        Balance Due
-                      </td>
-                      <td className="px-6 py-3 text-right text-sm font-bold text-gray-900">
-                        ${balance.toFixed(2)}
-                      </td>
-                      <td></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            ) : (
-              <div className="mb-4 p-4 text-center text-gray-500 border border-dashed border-gray-300 rounded-md">
-                No items added yet
-              </div>
-            )}
-          </div>
-
-          {/* Add New Item */}
-          <div className="mb-4 md:col-span-2 p-4 bg-gray-50 rounded-md">
-            <h3 className="text-md font-medium mb-3">Add Item</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="mb-2">
+          {/* Add new item form */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="text-md font-medium text-gray-800 mb-3">Add Item</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Service Selection */}
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Service
                 </label>
@@ -567,7 +565,7 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                   name="serviceId"
                   value={newItem.serviceId}
                   onChange={handleItemChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.item_serviceId ? "border-red-500" : ""
                   }`}
                 >
@@ -585,7 +583,8 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                 )}
               </div>
 
-              <div className="mb-2 md:col-span-2">
+              {/* Description */}
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Description
                 </label>
@@ -594,9 +593,10 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                   name="description"
                   value={newItem.description}
                   onChange={handleItemChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.item_description ? "border-red-500" : ""
                   }`}
+                  placeholder="Service description"
                 />
                 {errors.item_description && (
                   <p className="mt-1 text-xs text-red-500">
@@ -605,7 +605,8 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                 )}
               </div>
 
-              <div className="mb-2">
+              {/* Quantity */}
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Quantity
                 </label>
@@ -615,8 +616,7 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                   value={newItem.quantity}
                   onChange={handleItemChange}
                   min="1"
-                  step="1"
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.item_quantity ? "border-red-500" : ""
                   }`}
                 />
@@ -627,7 +627,8 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                 )}
               </div>
 
-              <div className="mb-2">
+              {/* Unit Price */}
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Unit Price ($)
                 </label>
@@ -638,7 +639,7 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                   onChange={handleItemChange}
                   min="0"
                   step="0.01"
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.item_unitPrice ? "border-red-500" : ""
                   }`}
                 />
@@ -649,7 +650,8 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                 )}
               </div>
 
-              <div className="mb-2">
+              {/* Discount */}
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Discount (%)
                 </label>
@@ -660,8 +662,7 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
                   onChange={handleItemChange}
                   min="0"
                   max="100"
-                  step="1"
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.item_discount ? "border-red-500" : ""
                   }`}
                 />
@@ -673,19 +674,19 @@ const BillingForm = ({ invoice = null, onSuccess, onCancel }) => {
               </div>
             </div>
 
-            <div className="mt-3">
+            <div className="mt-2">
               <button
                 type="button"
                 onClick={addItem}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Add to Invoice
+                Add Item
               </button>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end space-x-3">
+        <div className="mt-8 flex justify-end space-x-3">
           <button
             type="button"
             onClick={onCancel}

@@ -15,11 +15,11 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
     gender: "Male",
     specialization: "", // This is used as specialty in the UI but stored as specialization in DB
     licenseNumber: "",
-    experience: "",
+    // experience: "",
     availability: "",
     isActive: true,
     // Additional doctor-specific fields
-    patients: 0,
+    // patients: 0,
     nextAvailable: "",
   });
 
@@ -65,8 +65,8 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
         licenseNumber: doctor.licenseNumber || "",
         isActive: doctor.isActive || true,
         // Additional doctor-specific fields
-        experience: doctor.experience || "",
-        patients: doctor.patients || 0,
+        // experience: doctor.experience || "",
+        // patients: doctor.patients || 0,
         availability: doctor.availability || "Mon, Wed, Fri",
         nextAvailable:
           doctor.nextAvailable || new Date().toISOString().split("T")[0],
@@ -113,8 +113,8 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
       newErrors.specialization = "Specialty is required";
     if (!formData.licenseNumber.trim())
       newErrors.licenseNumber = "License number is required";
-    if (!formData.experience.trim())
-      newErrors.experience = "Experience is required";
+    // if (!formData.experience.trim())
+    //   newErrors.experience = "Experience is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -351,7 +351,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
             )}
           </div>
 
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Experience
             </label>
@@ -368,9 +368,9 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
             {errors.experience && (
               <p className="mt-1 text-xs text-red-500">{errors.experience}</p>
             )}
-          </div>
+          </div> */}
 
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Patients
             </label>
@@ -391,7 +391,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
                 cannot be manually edited.
               </p>
             )}
-          </div>
+          </div> */}
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">

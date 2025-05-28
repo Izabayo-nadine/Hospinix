@@ -180,7 +180,7 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               name="patientId"
               value={formData.patientId}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.patientId ? "border-red-500" : ""
               }`}
             >
@@ -205,7 +205,7 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               name="doctorId"
               value={formData.doctorId}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.doctorId ? "border-red-500" : ""
               }`}
             >
@@ -232,7 +232,7 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               name="appointmentDate"
               value={formData.appointmentDate}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.appointmentDate ? "border-red-500" : ""
               }`}
             />
@@ -252,7 +252,7 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               name="appointmentTime"
               value={formData.appointmentTime}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.appointmentTime ? "border-red-500" : ""
               }`}
             />
@@ -272,7 +272,7 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               name="duration"
               value={formData.duration}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             >
               <option value="15">15 minutes</option>
               <option value="30">30 minutes</option>
@@ -281,7 +281,7 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
             </select>
           </div>
 
-          {/* Status (for editing) */}
+          {/* Status (for edit mode) */}
           {isEdit && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -291,9 +291,10 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
               >
                 <option value="SCHEDULED">Scheduled</option>
+                <option value="CONFIRMED">Confirmed</option>
                 <option value="COMPLETED">Completed</option>
                 <option value="CANCELLED">Cancelled</option>
                 <option value="NO_SHOW">No Show</option>
@@ -301,8 +302,8 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
             </div>
           )}
 
-          {/* Reason and Notes */}
-          <div className="mb-4 md:col-span-2">
+          {/* Reason */}
+          <div className="mb-4 col-span-2">
             <label className="block text-sm font-medium text-gray-700">
               Reason for Appointment
             </label>
@@ -311,16 +312,18 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               name="reason"
               value={formData.reason}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.reason ? "border-red-500" : ""
               }`}
+              placeholder="e.g., Annual checkup, Follow-up, Consultation"
             />
             {errors.reason && (
               <p className="mt-1 text-xs text-red-500">{errors.reason}</p>
             )}
           </div>
 
-          <div className="mb-4 md:col-span-2">
+          {/* Notes */}
+          <div className="mb-4 col-span-2">
             <label className="block text-sm font-medium text-gray-700">
               Additional Notes
             </label>
@@ -329,7 +332,8 @@ const AppointmentForm = ({ appointment = null, onSuccess, onCancel }) => {
               value={formData.notes}
               onChange={handleChange}
               rows="3"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
+              placeholder="Any special requirements or notes for this appointment"
             ></textarea>
           </div>
         </div>

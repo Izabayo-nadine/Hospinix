@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Configure API URL based on environment - use proxy through Next.js to avoid CORS issues
-const API_URL = "/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 console.log("API URL:", API_URL);
 

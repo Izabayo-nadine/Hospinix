@@ -12,9 +12,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @Service
 public class PasswordResetService {
+
+    private static final Logger logger = Logger.getLogger(PasswordResetService.class.getName());
 
     @Autowired
     private UserRepository userRepository;
@@ -45,10 +48,11 @@ public class PasswordResetService {
 
         tokenRepository.save(resetToken);
 
-        String resetUrl = "http://localhost:3000/reset-password?token=" + token;
+        String resetUrl = "http://localhost:3000/login/resetPassword?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
+        message.setFrom("izabayonadine08@gmail.com");
         message.setSubject("Reset Password Request");
         message.setText("Click this link to reset your password: " + resetUrl);
 
@@ -68,6 +72,7 @@ public class PasswordResetService {
         }
 
         User user = resetToken.getUser();
+        logger.info("this is the email from: "+user.getEmail());
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 

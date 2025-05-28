@@ -222,7 +222,7 @@ const PatientForm = ({
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.firstName ? "border-red-500" : ""
               }`}
             />
@@ -240,7 +240,7 @@ const PatientForm = ({
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.lastName ? "border-red-500" : ""
               }`}
             />
@@ -258,7 +258,7 @@ const PatientForm = ({
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.email ? "border-red-500" : ""
               }`}
             />
@@ -276,7 +276,7 @@ const PatientForm = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.phoneNumber ? "border-red-500" : ""
               }`}
             />
@@ -294,7 +294,7 @@ const PatientForm = ({
               name="dateOfBirth"
               value={formData.dateOfBirth}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.dateOfBirth ? "border-red-500" : ""
               }`}
             />
@@ -311,7 +311,7 @@ const PatientForm = ({
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             >
               <option value="Male">Male</option>
               <option value="Female">Female</option>
@@ -328,7 +328,7 @@ const PatientForm = ({
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             />
           </div>
 
@@ -340,7 +340,7 @@ const PatientForm = ({
               name="bloodGroup"
               value={formData.bloodGroup}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             >
               <option value="">Select Blood Group</option>
               <option value="A+">A+</option>
@@ -363,34 +363,8 @@ const PatientForm = ({
               name="emergencyContact"
               value={formData.emergencyContact}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             />
-          </div>
-
-          <div className="mb-4 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Medical History
-            </label>
-            <textarea
-              name="medicalHistory"
-              value={formData.medicalHistory}
-              onChange={handleChange}
-              rows="3"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            ></textarea>
-          </div>
-
-          <div className="mb-4 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Allergies
-            </label>
-            <textarea
-              name="allergies"
-              value={formData.allergies}
-              onChange={handleChange}
-              rows="2"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            ></textarea>
           </div>
 
           <div className="mb-4">
@@ -402,7 +376,7 @@ const PatientForm = ({
               name="insuranceProvider"
               value={formData.insuranceProvider}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             />
           </div>
 
@@ -415,27 +389,25 @@ const PatientForm = ({
               name="insuranceNumber"
               value={formData.insuranceNumber}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             />
           </div>
 
-          {isEdit && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Status
-              </label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="Active">Active</option>
-                <option value="Discharged">Discharged</option>
-                <option value="Deceased">Deceased</option>
-              </select>
-            </div>
-          )}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Status
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -445,28 +417,52 @@ const PatientForm = ({
               name="assignedDoctorId"
               value={formData.assignedDoctorId}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
               disabled={loadingDoctors}
             >
-              <option value="">Select Doctor</option>
+              <option value="">None</option>
               {doctors.map((doctor) => (
                 <option key={doctor.id} value={doctor.id}>
-                  {doctor.firstName} {doctor.lastName}
+                  Dr. {doctor.firstName} {doctor.lastName}{" "}
+                  {doctor.specialization ? `(${doctor.specialization})` : ""}
                 </option>
               ))}
             </select>
             {loadingDoctors && (
-              <p className="mt-1 text-sm text-gray-500">Loading doctors...</p>
+              <p className="mt-1 text-xs text-gray-500">Loading doctors...</p>
             )}
-            {!loadingDoctors && doctors.length === 0 && (
-              <p className="mt-1 text-sm text-yellow-500">
-                No doctors available. Please add doctors first.
-              </p>
-            )}
+          </div>
+
+          <div className="mb-4 col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Medical History
+            </label>
+            <textarea
+              name="medicalHistory"
+              value={formData.medicalHistory}
+              onChange={handleChange}
+              rows="3"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
+              placeholder="Any previous medical conditions, surgeries, etc."
+            ></textarea>
+          </div>
+
+          <div className="mb-4 col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Allergies
+            </label>
+            <textarea
+              name="allergies"
+              value={formData.allergies}
+              onChange={handleChange}
+              rows="2"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
+              placeholder="List any known allergies"
+            ></textarea>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end space-x-3">
+        <div className="flex justify-end space-x-3 mt-6">
           <button
             type="button"
             onClick={onCancel}

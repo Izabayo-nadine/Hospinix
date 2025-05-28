@@ -5,9 +5,40 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PharmacistService from "@/services/pharmacist.service";
 
+interface Patient {
+  id?: string | number;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+interface Doctor {
+  id?: string | number;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+interface Prescription {
+  id: string | number;
+  prescriptionId?: string;
+  patient?: Patient;
+  patientName?: string;
+  doctor?: Doctor;
+  doctorName?: string;
+  createdAt: string;
+  status: string;
+  medications?: Array<{
+    name: string;
+    dosage: string;
+    frequency: string;
+    duration: string;
+  }>;
+}
+
 export default function PrescriptionsPage() {
   const router = useRouter();
-  const [prescriptions, setPrescriptions] = useState([]);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("active");
@@ -16,40 +47,60 @@ export default function PrescriptionsPage() {
     const fetchPrescriptions = async () => {
       try {
         setLoading(true);
-        const data = await PharmacistService.getPrescriptions({ 
+        console.log(`Fetching ${activeTab} prescriptions...`);
+        const response = await PharmacistService.getPrescriptions({ 
           status: activeTab.toUpperCase() 
         });
-        console.log("Fetched prescriptions:", data);
-        setPrescriptions(data || []);
+        console.log("Raw API response:", JSON.stringify(response, null, 2));
+
+        // Handle different response structures
+        let prescriptionData: Prescription[] = [];
+        if (Array.isArray(response)) {
+          prescriptionData = response;
+        } else if (response && typeof response === 'object') {
+          if (Array.isArray(response.data)) {
+            prescriptionData = response.data;
+          } else if (response.prescriptions && Array.isArray(response.prescriptions)) {
+            prescriptionData = response.prescriptions;
+          } else {
+            console.warn("Unexpected response structure:", response);
+            prescriptionData = [];
+          }
+        }
+
+        // Log the first prescription to see its structure
+        if (prescriptionData.length > 0) {
+          console.log("Sample prescription data structure:", JSON.stringify(prescriptionData[0], null, 2));
+        }
+
+        // Transform the data to ensure consistent structure
+        prescriptionData = prescriptionData.map(prescription => {
+          // Extract patient and doctor names, combining first and last names
+          const patientName = prescription.patient?.firstName && prescription.patient?.lastName 
+            ? `${prescription.patient.firstName} ${prescription.patient.lastName}` 
+            : prescription.patientName || "N/A";
+            
+          const doctorName = prescription.doctor?.firstName && prescription.doctor?.lastName
+            ? `${prescription.doctor.firstName} ${prescription.doctor.lastName}`
+            : prescription.doctorName || "N/A";
+
+          return {
+            ...prescription,
+            patientName,
+            doctorName,
+            // Keep the nested objects if they exist
+            patient: prescription.patient,
+            doctor: prescription.doctor
+          };
+        });
+
+        console.log("Transformed prescription data:", JSON.stringify(prescriptionData[0], null, 2));
+        setPrescriptions(prescriptionData);
         setError("");
       } catch (err) {
         console.error("Failed to load prescriptions:", err);
         setError("Failed to load prescriptions. Please try again.");
-        setPrescriptions([
-          {
-            id: 1,
-            prescriptionId: "RX-00123",
-            patientName: "John Smith",
-            doctorName: "Dr. Sarah Wilson",
-            createdAt: "2023-11-15",
-            status: "ACTIVE",
-            medications: [
-              { name: "Amoxicillin 500mg", dosage: "1 tablet", frequency: "3 times daily", duration: "7 days" },
-              { name: "Ibuprofen 400mg", dosage: "1 tablet", frequency: "as needed", duration: "3 days" }
-            ]
-          },
-          {
-            id: 2,
-            prescriptionId: "RX-00124",
-            patientName: "Emma Johnson",
-            doctorName: "Dr. Michael Brown",
-            createdAt: "2023-11-14",
-            status: "ACTIVE",
-            medications: [
-              { name: "Lisinopril 10mg", dosage: "1 tablet", frequency: "once daily", duration: "30 days" }
-            ]
-          }
-        ]);
+        setPrescriptions([]);
       } finally {
         setLoading(false);
       }
@@ -58,13 +109,36 @@ export default function PrescriptionsPage() {
     fetchPrescriptions();
   }, [activeTab]);
 
-  const handleFillPrescription = async (id) => {
+  const handleFillPrescription = async (id: string | number) => {
+    if (!id) {
+      setError("Invalid prescription ID");
+      return;
+    }
     try {
       setLoading(true);
+      console.log(`Filling prescription ${id}...`);
       await PharmacistService.fillPrescription(id);
-      // Refresh prescription list
-      setPrescriptions(prescriptions.filter(p => p.id !== id));
-      // Success message could be added here
+      console.log("Prescription filled successfully, refreshing list...");
+      
+      // Refresh the prescription list
+      const response = await PharmacistService.getPrescriptions({ 
+        status: activeTab.toUpperCase() 
+      });
+      
+      // Handle different response structures
+      let prescriptionData: Prescription[] = [];
+      if (Array.isArray(response)) {
+        prescriptionData = response;
+      } else if (response && typeof response === 'object') {
+        if (Array.isArray(response.data)) {
+          prescriptionData = response.data;
+        } else if (response.prescriptions && Array.isArray(response.prescriptions)) {
+          prescriptionData = response.prescriptions;
+        }
+      }
+      
+      setPrescriptions(prescriptionData);
+      setError("");
     } catch (err) {
       console.error("Failed to fill prescription:", err);
       setError("Failed to fill prescription. Please try again.");
@@ -73,7 +147,12 @@ export default function PrescriptionsPage() {
     }
   };
 
-  const handleViewDetails = (id) => {
+  const handleViewDetails = (id: string | number) => {
+    if (!id) {
+      setError("Invalid prescription ID");
+      return;
+    }
+    console.log(`Navigating to prescription details for ID: ${id}`);
     router.push(`/pharmacist/prescriptions/${id}`);
   };
 
@@ -81,7 +160,7 @@ export default function PrescriptionsPage() {
     <DashboardLayout userType="pharmacist" title="Manage Prescriptions">
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Prescriptions</h1>
+          <h1 className="text-2xl font-semibold text-black ">Prescriptions</h1>
           
           {/* Tabs */}
           <div className="flex space-x-4 border-b">
@@ -128,46 +207,60 @@ export default function PrescriptionsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {prescriptions.map((prescription) => (
-                  <tr key={prescription.id || prescription.prescriptionId}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {prescription.prescriptionId || `RX-${prescription.id}`}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {prescription.patientName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {prescription.doctorName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {prescription.createdAt ? new Date(prescription.createdAt).toLocaleDateString() : "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        prescription.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                      }`}>
-                        {prescription.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button
-                        onClick={() => handleViewDetails(prescription.id || prescription.prescriptionId)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      >
-                        View
-                      </button>
-                      
-                      {prescription.status === "ACTIVE" && (
+                {prescriptions.map((prescription) => {
+                  const prescriptionId = prescription.id || prescription.prescriptionId;
+                  if (!prescriptionId) return null;
+                  
+                  // Log each prescription being rendered
+                  console.log("Rendering prescription:", {
+                    id: prescriptionId,
+                    patient: prescription.patient,
+                    patientName: prescription.patientName,
+                    doctor: prescription.doctor,
+                    doctorName: prescription.doctorName
+                  });
+                  
+                  return (
+                    <tr key={prescriptionId}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {prescription.prescriptionId || `RX-${prescription.id}`}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {prescription.patientName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {prescription.doctorName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {prescription.createdAt ? new Date(prescription.createdAt).toLocaleDateString() : "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          prescription.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                        }`}>
+                          {prescription.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
-                          onClick={() => handleFillPrescription(prescription.id || prescription.prescriptionId)}
-                          className="text-green-600 hover:text-green-900"
+                          onClick={() => handleViewDetails(prescriptionId)}
+                          className="text-indigo-600 hover:text-indigo-900 mr-4"
                         >
-                          Fill
+                          View
                         </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        
+                        {prescription.status === "ACTIVE" && (
+                          <button
+                            onClick={() => handleFillPrescription(prescriptionId)}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            Fill
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

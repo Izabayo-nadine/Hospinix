@@ -8,13 +8,12 @@ import AuthService from "../../../services/auth.service";
 
 export default function Login() {
   const router = useRouter();
-  const [userType, setUserType] = useState("receptionist");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 👈 NEW STATE
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,22 +28,29 @@ export default function Login() {
 
     try {
       const userData = await AuthService.login(email, password);
+      
+      // The backend will determine the role and return it
+      // We'll redirect based on the role returned from the backend
+      const role = userData.role.toLowerCase();
+      
+      // Map roles to their dashboard paths
+      const rolePaths: { [key: string]: string } = {
+        'admin': '/admin',
+        'doctor': '/doctor',
+        'pharmacist': '/pharmacist',
+        'receptionist': '/receptionist'
+      };
 
-      if (userData.role.toLowerCase() !== userType.toLowerCase()) {
-        setError(`You are not authorized as a ${userType}. Please select the correct role.`);
-        AuthService.logout();
-        setIsLoading(false);
-        return;
+      const dashboardPath = rolePaths[role];
+      if (!dashboardPath) {
+        throw new Error("Invalid user role");
       }
 
-      router.push(`/${userType}`);
+      router.push(dashboardPath);
     } catch (err: any) {
       console.error("Login error:", err);
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Failed to login. Please try again.");
-      }
+      // Use a generic error message for security
+      setError("Invalid email or password");
       setIsLoading(false);
     }
   };
@@ -74,25 +80,8 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label htmlFor="userType" className="block text-sm font-medium text-gray-700 mb-1">
-                Login as
-              </label>
-              <select
-                id="userType"
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                value={userType}
-                onChange={(e) => setUserType(e.target.value)}
-              >
-                <option value="admin">Administrator</option>
-                <option value="doctor">Doctor</option>
-                <option value="pharmacist">Pharmacist</option>
-                <option value="receptionist">Receptionist</option>
-              </select>
-            </div>
-
-            <div className="mb-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
@@ -100,28 +89,28 @@ export default function Login() {
                 id="email"
                 type="email"
                 placeholder="your@email.com"
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-gray-400"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
               />
             </div>
 
-            <div className="mb-6">
+            <div>
               <div className="flex justify-between mb-1">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <Link href="/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-800">
+                <Link href="login/forgotPassword" className="text-sm text-indigo-600 hover:text-indigo-800">
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? "text" : "password"} // Toggle visibility
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 pr-10"
+                  className="w-full px-4 py-3 bg-gray-50 text-gray-800 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-gray-400 pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
@@ -137,7 +126,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center mb-6">
+            <div className="flex items-center">
               <input
                 id="remember_me"
                 type="checkbox"
@@ -146,14 +135,14 @@ export default function Login() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 disabled={isLoading}
               />
-              <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="remember_me" className="ml-3 block text-sm text-gray-700">
                 Remember me
               </label>
             </div>
 
             <button
               type="submit"
-              className={`w-full bg-indigo-600 text-white p-3 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+              className={`w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
                 isLoading ? "opacity-70 cursor-not-allowed" : ""
               }`}
               disabled={isLoading}

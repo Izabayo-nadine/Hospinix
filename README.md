@@ -37,7 +37,7 @@ spring.datasource.password=your_password
    cd backend
    mvn spring-boot:run
    ```
-3. The backend will start on http://localhost:8081
+3. The backend will start on http://localhost:8080
 
 #### Starting the Frontend
 
@@ -60,7 +60,7 @@ spring.datasource.password=your_password
 
 ### Troubleshooting
 
-- If the API connection fails, ensure the backend is running at http://localhost:8081
+- If the API connection fails, ensure the backend is running at http://localhost:8080
 - Check the PostgreSQL database connection in the backend application.properties
 - Verify that the Next.js rewrites in next.config.js are correctly configured
 - Look for errors in the browser console and backend logs

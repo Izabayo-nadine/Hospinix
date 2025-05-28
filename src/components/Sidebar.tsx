@@ -6,9 +6,12 @@ import Image from "next/image";
 
 type SidebarProps = {
   userType: 'admin' | 'doctor' | 'pharmacist' | 'receptionist';
+  userName?: string;
+  userImage?: string;
+  onImageUpload?: (file: File) => void;
 };
 
-export default function Sidebar({ userType }: SidebarProps) {
+export default function Sidebar({ userType, userName = 'User', userImage, onImageUpload }: SidebarProps) {
   const pathname = usePathname();
   
   const adminLinks = [
@@ -29,6 +32,7 @@ export default function Sidebar({ userType }: SidebarProps) {
     { href: '/doctor', label: 'Dashboard', icon: 'home' },
     { href: '/doctor/patients', label: 'Patients', icon: 'procedures' },
     { href: '/doctor/appointments', label: 'Appointments', icon: 'calendar' },
+    { href: '/doctor/prescriptions', label: 'Prescriptions', icon: 'pills' },
     { href: '/doctor/beds', label: 'Beds', icon: 'bed' },
     // { href: '/doctor/rooms', label: 'Rooms', icon: 'door-open' },
   ];
@@ -52,6 +56,13 @@ export default function Sidebar({ userType }: SidebarProps) {
     doctor: doctorLinks,
     pharmacist: pharmacistLinks,
     receptionist: receptionistLinks
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && onImageUpload) {
+      onImageUpload(file);
+    }
   };
 
   // Function to render the appropriate icon based on name
@@ -136,7 +147,7 @@ export default function Sidebar({ userType }: SidebarProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-6 flex items-center border-b border-indigo-700">
+      <Link href={`/${userType}`} className="px-4 py-6 flex items-center border-b border-indigo-700 hover:bg-indigo-800 transition-colors">
         <div className="relative h-10 w-10 mr-3">
           <Image src="/logo.svg" alt="Logo" fill className="rounded-lg" />
         </div>
@@ -144,7 +155,7 @@ export default function Sidebar({ userType }: SidebarProps) {
           <h1 className="text-white text-lg font-bold">Hospinix</h1>
           <p className="text-indigo-200 text-xs">{userType.charAt(0).toUpperCase() + userType.slice(1)} Portal</p>
         </div>
-      </div>
+      </Link>
       
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="px-2 space-y-1">
@@ -171,6 +182,33 @@ export default function Sidebar({ userType }: SidebarProps) {
       </div>
       
       <div className="p-4 border-t border-indigo-700">
+        {/* <div className="flex items-center mb-4">
+          <div className="relative h-12 w-12 mr-3">
+            {userImage ? (
+              <Image src={userImage} alt="Profile" fill className="rounded-full object-cover" />
+            ) : (
+              <div className="h-full w-full rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-bold">
+                {userName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <label className="absolute bottom-0 right-0 bg-indigo-500 rounded-full p-1 cursor-pointer hover:bg-indigo-600 transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </label>
+          </div>
+          <div>
+            <p className="text-white font-medium">{userName}</p>
+            <p className="text-indigo-200 text-xs">{userType.charAt(0).toUpperCase() + userType.slice(1)}</p>
+          </div>
+        </div> */}
         <Link
           href="/login"
           className="flex items-center px-2 py-2 text-sm font-medium rounded-md text-indigo-100 hover:bg-indigo-700 transition-colors"

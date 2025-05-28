@@ -35,8 +35,10 @@ public class Prescription {
     private User doctor;
 
     @ManyToOne
-    @JoinColumn(name = "appointment_id")
+    @JoinColumn(name = "appointmentid")
     private Appointment appointment;
+
+
 
     @NotNull
     private LocalDate prescriptionDate;

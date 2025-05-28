@@ -46,7 +46,7 @@ export default function DoctorAppointments() {
         }
         
         // Transform the data for display
-        const formattedAppointments = appointmentsData.map(appointment => ({
+        const formattedAppointments = appointmentsData.map(appointment  => ({
           id: appointment.id,
           appointmentId: appointment.appointmentId,
           patientName: `${appointment.patient.firstName} ${appointment.patient.lastName}`,
@@ -75,7 +75,7 @@ export default function DoctorAppointments() {
 
   const handleStatusChange = async (appointmentId: any, newStatus: string) => {
     try {
-      await DoctorService.updateAppointment(appointmentId, { status: newStatus });
+      await DoctorService.updateAppointmentStatus(appointmentId,  newStatus );
       
       // Update the local state to reflect the change
       setAppointments(prevAppointments => 
@@ -229,7 +229,7 @@ export default function DoctorAppointments() {
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-medium">{appointment.patientName}</h3>
+                          <h3 className="font-medium text-gray-900">{appointment.patientName}</h3>
                           <p className="text-sm text-gray-500">
                             {appointment.date} at {appointment.time}
                           </p>
@@ -327,15 +327,15 @@ export default function DoctorAppointments() {
                 </div>
 
                 <div className="border-t border-gray-200 pt-4">
-                  <div className="mb-4">
+                  {/* <div className="mb-4">
                     <h3 className="text-lg font-medium mb-2">Reason for Visit</h3>
                     <p>{selectedAppointment.reason}</p>
-                  </div>
+                  </div> */}
 
                   <div className="mb-4">
-                    <h3 className="text-lg font-medium mb-2">Doctor's Notes</h3>
+                    <h3 className="text-lg font-medium mb-2 text-gray-900">Doctor's Notes</h3>
                     <textarea
-                      className="w-full border border-gray-300 rounded-md p-3 min-h-[100px]"
+                      className="w-full border border-gray-300 rounded-md p-3 min-h-[100px] text-gray-500"
                       value={selectedAppointment.notes}
                       onChange={(e) => {
                         setSelectedAppointment({
@@ -352,7 +352,7 @@ export default function DoctorAppointments() {
                           try {
                             await DoctorService.updateAppointment(
                               selectedAppointment.id,
-                              { notes: selectedAppointment.notes }
+                              {notes:selectedAppointment.notes}
                             );
                             alert("Notes saved successfully!");
                           } catch (err) {
@@ -367,7 +367,7 @@ export default function DoctorAppointments() {
                   </div>
 
                   <div className="mb-4">
-                    <h3 className="text-lg font-medium mb-2">Prescriptions</h3>
+                    <h3 className="text-lg font-medium mb-2 text-gray-900">Prescriptions</h3>
                     <div className="border border-gray-200 rounded-md p-4 flex items-center justify-center h-32">
                       <button 
                         className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"

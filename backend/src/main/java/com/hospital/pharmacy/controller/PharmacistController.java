@@ -336,7 +336,7 @@ public class PharmacistController {
     }
 
     @GetMapping("/medicines/low-stock")
-    public ResponseEntity<?> getLowStockMedicines(HttpServletRequest request ) {
+    public ResponseEntity<?> getLowStockMedicines(HttpServletRequest request) {
         User pharmacist = (User) request.getAttribute("user");
         String role = (String) request.getAttribute("role");
 
@@ -345,7 +345,7 @@ public class PharmacistController {
                     .body(Map.of("message", "Access denied"));
         }
         List<Medicine> medicines = medicineService.getLowStatusMedicines();
-        logger.info("this is the low_Stock medicine "+medicines);
+        logger.info("this is the low_Stock medicine " + medicines);
         return ResponseEntity.ok(medicines);
 
     }
@@ -364,6 +364,25 @@ public class PharmacistController {
         List<Prescription> prescriptions = prescriptionRepository.findByStatus("ACTIVE");
 
         return ResponseEntity.ok(prescriptions);
+    }
+
+    // Get a specific prescription by ID
+    @GetMapping("/prescriptions/{id}")
+    public ResponseEntity<?> getPrescriptionById(
+            @PathVariable Long id,
+            HttpServletRequest request) {
+
+        User pharmacist = (User) request.getAttribute("user");
+        String role = (String) request.getAttribute("role");
+
+        if (pharmacist == null || !role.equals("PHARMACIST")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Access denied"));
+        }
+
+        return prescriptionRepository.findById(id)
+                .map(prescription -> ResponseEntity.ok(prescription))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Fill a prescription
@@ -395,5 +414,4 @@ public class PharmacistController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    
 }

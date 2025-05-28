@@ -80,6 +80,50 @@ const AuthService = {
       throw error;
     }
   },
+
+  // New method to upload profile image
+  async uploadProfileImage(userId, imageFile) {
+    try {
+      const formData = new FormData();
+      formData.append("imageFile", imageFile);
+
+      // Note: The backend endpoint is under /admin.
+      // In a real app, you might have a more general /users endpoint
+      // or handle this based on user role.
+      const response = await api.post(
+        `/admin/users/${userId}/profile-image`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      // Assuming the backend returns the updated user or image URL
+      const updatedUser = response.data; // Assuming response.data contains the user object or at least imageUrl
+
+      // Update user data in localStorage with the new profile image URL
+      const currentUserStr = localStorage.getItem("user");
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        const updatedCurrentUser = {
+          ...currentUser,
+          profileImage: updatedUser.imageUrl,
+        };
+        localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
+        console.log(
+          "localStorage user profileImage updated:",
+          updatedUser.imageUrl
+        );
+      }
+
+      return updatedUser;
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      throw error;
+    }
+  },
 };
 
 export default AuthService;

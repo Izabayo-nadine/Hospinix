@@ -336,128 +336,128 @@ export default function NewAppointmentPage() {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Patient</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Patient</label>
                 <select
                   name="patientId"
                   value={formData.patientId}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900 ${
                     formErrors.patientId ? "border-red-500" : ""
                   }`}
                 >
-                  <option value="">Select Patient</option>
+                  <option value="" className="text-gray-500">Select Patient</option>
                   {patients.map(patient => (
-                    <option key={patient.id} value={patient.id}>
+                    <option key={patient.id} value={patient.id} className="text-gray-900">
                       {patient.firstName} {patient.lastName} ({patient.patientId})
                     </option>
                   ))}
                 </select>
                 {formErrors.patientId && (
-                  <p className="mt-1 text-sm text-red-500">{formErrors.patientId}</p>
+                  <p className="mt-1 text-sm text-red-600">{formErrors.patientId}</p>
                 )}
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Doctor</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Doctor</label>
                 <select
                   name="doctorId"
                   value={formData.doctorId}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900 ${
                     formErrors.doctorId ? "border-red-500" : ""
                   }`}
                 >
-                  <option value="">Select Doctor</option>
+                  <option value="" className="text-gray-500">Select Doctor</option>
                   {doctors.map(doctor => (
-                    <option key={doctor.id} value={doctor.id}>
+                    <option key={doctor.id} value={doctor.id} className="text-gray-900">
                       Dr. {doctor.firstName} {doctor.lastName} ({doctor.department || "General"})
                     </option>
                   ))}
                 </select>
                 {formErrors.doctorId && (
-                  <p className="mt-1 text-sm text-red-500">{formErrors.doctorId}</p>
+                  <p className="mt-1 text-sm text-red-600">{formErrors.doctorId}</p>
                 )}
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Appointment Date</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Appointment Date</label>
                 <input
                   type="date"
                   name="appointmentDate"
                   value={formData.appointmentDate}
                   onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900 ${
                     formErrors.appointmentDate ? "border-red-500" : ""
                   }`}
                 />
                 {formErrors.appointmentDate && (
-                  <p className="mt-1 text-sm text-red-500">{formErrors.appointmentDate}</p>
+                  <p className="mt-1 text-sm text-red-600">{formErrors.appointmentDate}</p>
                 )}
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Appointment Time</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Appointment Time</label>
                 <select
                   name="appointmentTime"
                   value={formData.appointmentTime}
                   onChange={handleChange}
                   disabled={!formData.doctorId || !formData.appointmentDate}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900 disabled:bg-gray-100 disabled:text-gray-500 ${
                     formErrors.appointmentTime ? "border-red-500" : ""
                   }`}
                 >
-                  <option value="">Select Time</option>
+                  <option value="" className="text-gray-500">Select Time</option>
                   {availableTimeSlots.map(time => (
-                    <option key={time} value={time}>{time}</option>
+                    <option key={time} value={time} className="text-gray-900">{time}</option>
                   ))}
                 </select>
                 {formErrors.appointmentTime && (
-                  <p className="mt-1 text-sm text-red-500">{formErrors.appointmentTime}</p>
+                  <p className="mt-1 text-sm text-red-600">{formErrors.appointmentTime}</p>
                 )}
                 {availableTimeSlots.length === 0 && formData.doctorId && formData.appointmentDate && (
-                  <p className="mt-1 text-sm text-amber-500">No available time slots for this date. Please select another date.</p>
+                  <p className="mt-1 text-sm text-amber-600">No available time slots for this date. Please select another date.</p>
                 )}
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Appointment Type</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Appointment Type</label>
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900"
                 >
-                  <option value="REGULAR">Regular Check-up</option>
-                  <option value="FOLLOW_UP">Follow-up</option>
-                  <option value="EMERGENCY">Emergency</option>
-                  <option value="CONSULTATION">Consultation</option>
+                  <option value="REGULAR" className="text-gray-900">Regular Check-up</option>
+                  <option value="FOLLOW_UP" className="text-gray-900">Follow-up</option>
+                  <option value="EMERGENCY" className="text-gray-900">Emergency</option>
+                  <option value="CONSULTATION" className="text-gray-900">Consultation</option>
                 </select>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Duration (minutes)</label>
                 <select
                   name="duration"
                   value={formData.duration}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900"
                 >
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                  <option value="45">45 minutes</option>
-                  <option value="60">60 minutes</option>
+                  <option value="15" className="text-gray-900">15 minutes</option>
+                  <option value="30" className="text-gray-900">30 minutes</option>
+                  <option value="45" className="text-gray-900">45 minutes</option>
+                  <option value="60" className="text-gray-900">60 minutes</option>
                 </select>
               </div>
               
               <div className="mb-4 md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Notes</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Notes</label>
                 <textarea
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
                   rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 text-gray-900"
                   placeholder="Additional notes or reason for appointment"
                 />
               </div>

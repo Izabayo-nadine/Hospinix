@@ -33,8 +33,8 @@ export default function DoctorPatients() {
           gender: patient.gender,
           lastVisit: patient.lastVisitDate || "No recent visits",
           condition: patient.medicalHistory || "No condition recorded",
-          diagnosis: patient.diagnosis || "No diagnosis recorded",
-          treatment: patient.currentMedications || "No treatment recorded",
+          // diagnosis: patient.diagnosis || "No diagnosis recorded",
+          // treatment: patient.currentMedications || "No treatment recorded",
           // Keep original data for reference
           originalPatient: patient
         }));
@@ -114,7 +114,7 @@ export default function DoctorPatients() {
                       }`}
                       onClick={() => setSelectedPatient(patient)}
                     >
-                      <h3 className="font-medium">{patient.name}</h3>
+                      <h3 className="font-medium text-gray-900">{patient.name}</h3>
                       <p className="text-sm text-gray-500">Age: {patient.age}, {patient.gender}</p>
                       <p className="text-sm text-gray-500">Condition: {patient.condition}</p>
                     </div>
@@ -134,22 +134,22 @@ export default function DoctorPatients() {
                     <p className="text-gray-500">Patient ID: {selectedPatient.patientId}</p>
                     <p className="text-gray-500">Last Visit: {selectedPatient.lastVisit}</p>
                   </div>
-                  <div className="flex space-x-2">
+                  {/* <div className="flex space-x-2">
                     <button className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 text-sm">
                       Assign Medicine
                     </button>
                     <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
                       Update Treatment
                     </button>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="border-t border-gray-200 pt-4">
                   <div className="mb-4">
-                    <h3 className="text-lg font-medium mb-2">Medical Condition</h3>
-                    <p>{selectedPatient.condition}</p>
+                    <h3 className="text-lg font-medium mb-2 text-gray-900">Medical Condition</h3>
+                    <p className="text-gray-500">{selectedPatient.condition}</p>
                   </div>
-
+{/* 
                   <div className="mb-4">
                     <h3 className="text-lg font-medium mb-2">Diagnosis</h3>
                     <p>{selectedPatient.diagnosis}</p>
@@ -158,15 +158,15 @@ export default function DoctorPatients() {
                   <div className="mb-4">
                     <h3 className="text-lg font-medium mb-2">Current Treatment</h3>
                     <p>{selectedPatient.treatment}</p>
-                  </div>
+                  </div> */}
 
                   <div>
-                    <h3 className="text-lg font-medium mb-2">Medical History</h3>
+                    <h3 className="text-lg font-medium mb-2 text-gray-900">Medical History</h3>
                     <div className="border border-gray-200 rounded-md p-4">
                       <div className="mb-3 pb-3 border-b border-gray-200">
                         <p className="text-sm text-gray-500">{selectedPatient.lastVisit !== "No recent visits" ? selectedPatient.lastVisit : new Date().toISOString().split('T')[0]}</p>
-                        <p className="font-medium">Regular check-up</p>
-                        <p>{selectedPatient.condition}</p>
+                        <p className="font-medium text-gray-500">Regular check-up</p>
+                        <p className="text-gray-500 text-sm">{selectedPatient.condition}</p>
                       </div>
                     </div>
                   </div>
