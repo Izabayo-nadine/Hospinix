@@ -15,6 +15,12 @@ export default function PatientsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
+  // Add new state for sorting and pagination
+  const [sortField, setSortField] = useState("name");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -80,6 +86,52 @@ export default function PatientsPage() {
     router.push(`/receptionist/appointments/new?patientId=${patientId}`);
   };
 
+  // Add sorting function
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  // Sort and filter patients
+  const sortedAndFilteredPatients = patients
+    .filter(patient => 
+      (selectedStatus === "all" || patient.status === selectedStatus) &&
+      (searchQuery === "" || 
+       patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       patient.phone.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+    .sort((a, b) => {
+      // For name sorting, use simple alphabetical comparison
+      if (sortField === "name") {
+        const aName = (a.name || "").toLowerCase();
+        const bName = (b.name || "").toLowerCase();
+        return sortDirection === "asc" 
+          ? aName.localeCompare(bName)
+          : bName.localeCompare(aName);
+      }
+      
+      // For other fields, use the standard comparison
+      let aValue = (a[sortField] || "").toString().toLowerCase();
+      let bValue = (b[sortField] || "").toString().toLowerCase();
+      
+      return sortDirection === "asc" 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedAndFilteredPatients.length / itemsPerPage);
+  const paginatedPatients = sortedAndFilteredPatients.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <DashboardLayout userType="receptionist" title="Patient Management">
       <div className="bg-white shadow rounded-lg p-6">
@@ -90,7 +142,7 @@ export default function PatientsPage() {
               <input
                 type="text"
                 placeholder="Search patients..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full text-gray-700"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -110,7 +162,7 @@ export default function PatientsPage() {
             </div>
             <div className="flex space-x-2">
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
@@ -146,17 +198,37 @@ export default function PatientsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Information</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age / Gender</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("patientId")}
+                    >
+                      Patient ID {sortField === "patientId" && (sortDirection === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("name")}
+                    >
+                      Name {sortField === "name" && (sortDirection === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("phoneNumber")}
+                    >
+                      Contact {sortField === "phoneNumber" && (sortDirection === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("status")}
+                    >
+                      Status {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPatients.map((patient) => (
+                  {paginatedPatients.map((patient) => (
                     <tr key={patient.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{patient.patientId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{patient.name}</td>
@@ -164,10 +236,6 @@ export default function PatientsPage() {
                         <div>{patient.email}</div>
                         <div>{patient.phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {patient.age} / {patient.gender}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.lastVisit}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           patient.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -195,7 +263,7 @@ export default function PatientsPage() {
               </table>
             </div>
             
-            {filteredPatients.length === 0 && (
+            {paginatedPatients.length === 0 && (
               <div className="text-center py-4 text-gray-500">
                 No patients found matching your criteria.
               </div>
@@ -203,9 +271,66 @@ export default function PatientsPage() {
           </>
         )}
         
-        <div className="mt-4 flex justify-between items-center">
-          <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">{filteredPatients.length}</span> {filteredPatients.length === 1 ? "patient" : "patients"}
+        <div className="mt-8 bg-white shadow rounded-lg overflow-hidden">
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+                  <span className="font-medium">
+                    {Math.min(currentPage * itemsPerPage, sortedAndFilteredPatients.length)}
+                  </span>{" "}
+                  of <span className="font-medium">{sortedAndFilteredPatients.length}</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  {[...Array(totalPages)].map((_, index) => (
+                    <button
+                      key={index + 1}
+                      onClick={() => setCurrentPage(index + 1)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        currentPage === index + 1
+                          ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </nav>
+              </div>
+            </div>
           </div>
         </div>
       </div>

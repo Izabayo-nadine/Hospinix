@@ -201,7 +201,7 @@ const PatientForm = ({
 
   return (
     <div className="p-4 bg-white rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">
+      <h2 className="text-xl font-semibold mb-4 text-black">
         {isEdit ? "Edit Patient" : "Register New Patient"}
       </h2>
 

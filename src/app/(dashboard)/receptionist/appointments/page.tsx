@@ -114,7 +114,7 @@ export default function AppointmentsPage() {
               <input
                 type="text"
                 placeholder="Search appointments..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full text-gray-700"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -128,13 +128,13 @@ export default function AppointmentsPage() {
                 <path
                   fillRule="evenodd"
                   d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
+                  clipRule="evenodd" 
                 />
               </svg>
             </div>
             <div className="flex space-x-2">
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700" 
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               >
@@ -144,7 +144,7 @@ export default function AppointmentsPage() {
                 ))}
               </select>
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700" 
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >

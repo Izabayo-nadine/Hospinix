@@ -62,4 +62,4 @@ public class Room {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-} 
+}

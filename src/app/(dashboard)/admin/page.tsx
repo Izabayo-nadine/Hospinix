@@ -244,7 +244,7 @@ export default function AdminDashboard() {
         <div className="p-6">
           {selectedTab === "overview" && (
             <div className="grid md:grid-cols-2 gap-6">
-              <div>
+              {/* <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Hospital Overview</h3>
                 <div className="col-span-12 lg:col-span-8 bg-white rounded-md shadow overflow-hidden">
                   <div className="p-4 sm:p-6 flex justify-between items-center border-b border-gray-100">
@@ -302,9 +302,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div>
-                {/* <h3 className="text-lg font-medium text-gray-900 mb-4">Resource Distribution</h3> */}
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Resource Distribution</h3>
                 <PieChart 
                   data={{
                     labels: ['Doctors', 'Pharmacists', 'Receptionists', 'Patients', 'Appointments', 'Medicines'],
@@ -317,7 +317,7 @@ export default function AdminDashboard() {
                       stats.totalMedicines
                     ]
                   }}
-                  title="Resource Distribution"
+                  title=""
                 />
               </div>
             </div>

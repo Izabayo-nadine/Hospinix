@@ -67,7 +67,7 @@ export default function ViewPatientPage() {
         ) : patient ? (
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold text-gray-900">
                 {patient.firstName} {patient.lastName}
               </h2>
               <div className="flex space-x-2">

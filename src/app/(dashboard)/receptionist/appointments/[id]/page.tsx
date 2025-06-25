@@ -166,7 +166,7 @@ export default function EditAppointmentPage({ params }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">Patient</label>
-                <div className="mt-1 p-2 border border-gray-300 rounded-md bg-gray-50">
+                <div className="mt-1 p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700">
                   {appointment.patient.firstName} {appointment.patient.lastName} ({appointment.patient.patientId})
                 </div>
                 <div className="mt-1 text-xs text-gray-500">
@@ -180,7 +180,7 @@ export default function EditAppointmentPage({ params }) {
                   name="doctorId"
                   value={formData.doctorId}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 text-base border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                 >
                   {doctors.map(doctor => (
                     <option key={doctor.id} value={doctor.id}>
@@ -197,7 +197,7 @@ export default function EditAppointmentPage({ params }) {
                   name="appointmentDate"
                   value={formData.appointmentDate}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                 />
               </div>
               
@@ -208,7 +208,7 @@ export default function EditAppointmentPage({ params }) {
                   name="appointmentTime"
                   value={formData.appointmentTime}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                 />
               </div>
               
@@ -218,7 +218,7 @@ export default function EditAppointmentPage({ params }) {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 text-base border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                 >
                   <option value="SCHEDULED">Scheduled</option>
                   <option value="CHECKED_IN">Checked In</option>
@@ -233,7 +233,7 @@ export default function EditAppointmentPage({ params }) {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 text-base border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                 >
                   <option value="REGULAR">Regular Check-up</option>
                   <option value="FOLLOW_UP">Follow-up</option>
@@ -248,7 +248,7 @@ export default function EditAppointmentPage({ params }) {
                   name="duration"
                   value={formData.duration}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 text-base border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                 >
                   <option value="15">15 minutes</option>
                   <option value="30">30 minutes</option>
@@ -264,7 +264,7 @@ export default function EditAppointmentPage({ params }) {
                   value={formData.notes}
                   onChange={handleChange}
                   rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-700"
                   placeholder="Additional notes or reason for appointment"
                 />
               </div>

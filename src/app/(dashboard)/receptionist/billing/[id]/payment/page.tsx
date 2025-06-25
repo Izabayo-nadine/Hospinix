@@ -135,9 +135,9 @@ export default function ProcessPaymentPage() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h2 className="text-lg font-medium text-gray-900 mb-3">Payment Summary</h2>
                   <div className="space-y-2">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between ">
                       <span className="text-gray-600">Total Amount:</span>
-                      <span className="font-medium">${parseFloat(billing.totalAmount).toFixed(2)}</span>
+                      <span className="font-medium text-gray-600">${parseFloat(billing.totalAmount).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Amount Paid:</span>
@@ -185,7 +185,7 @@ export default function ProcessPaymentPage() {
                             min="0.01"
                             max={(parseFloat(billing.totalAmount) - parseFloat(billing.paidAmount || 0)).toFixed(2)}
                             required
-                            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-4 py-2.5 sm:text-sm border border-gray-300 rounded-md shadow-sm"
                             placeholder="0.00"
                             value={paymentData.amount}
                             onChange={handleChange}
@@ -201,7 +201,7 @@ export default function ProcessPaymentPage() {
                           id="paymentMethod"
                           name="paymentMethod"
                           required
-                          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                          className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm text-gray-700"
                           value={paymentData.paymentMethod}
                           onChange={handleChange}
                         >
@@ -221,7 +221,7 @@ export default function ProcessPaymentPage() {
                           type="text"
                           name="referenceNumber"
                           id="referenceNumber"
-                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full px-3 py-2.5 shadow-sm sm:text-sm border border-gray-300 rounded-md text-gray-700"
                           placeholder="e.g., Transaction ID, Check number"
                           value={paymentData.referenceNumber}
                           onChange={handleChange}
@@ -236,7 +236,7 @@ export default function ProcessPaymentPage() {
                           id="notes"
                           name="notes"
                           rows={3}
-                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full px-3 py-2.5 shadow-sm sm:text-sm border border-gray-300 rounded-md text-gray-700"
                           placeholder="Additional information about the payment"
                           value={paymentData.notes}
                           onChange={handleChange}

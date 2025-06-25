@@ -17,7 +17,15 @@ const AdminService = {
   // },
 
   getUsers: async (filters = {}) => {
-    const { role, active, search, page = 1, size = 10, sort } = filters;
+    const {
+      role,
+      active,
+      search,
+      page = 1,
+      size = 10,
+      sort,
+      specialization,
+    } = filters;
     const params = new URLSearchParams();
 
     if (role) params.append("role", role);
@@ -26,6 +34,7 @@ const AdminService = {
     if (page) params.append("page", (page - 1).toString()); // Convert to 0-based index
     if (size) params.append("size", size.toString());
     if (sort) params.append("sort", sort);
+    if (specialization) params.append("specialization", specialization);
 
     try {
       const response = await api.get(`/admin/users?${params.toString()}`);

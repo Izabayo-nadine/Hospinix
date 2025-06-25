@@ -77,24 +77,39 @@ export default function DoctorsPage() {
       try {
         setLoading(true);
         const sortParam = `${sort.key},${sort.direction}`;
-        console.log('Fetching doctors with params:', {
-          page: pagination.currentPage - 1,
-          size: pagination.itemsPerPage,
-          sort: sortParam,
-          search: searchQuery,
-          active: statusFilter === "all" ? undefined : statusFilter === "Active"
-        });
-
-        const response = await AdminService.getUsers({
+        const requestParams = {
           role: "DOCTOR",
           page: pagination.currentPage - 1,
           size: pagination.itemsPerPage,
           sort: sortParam,
           search: searchQuery,
-          active: statusFilter === "all" ? undefined : statusFilter === "Active"
-        });
+          active: statusFilter === "all" ? undefined : statusFilter === "Active",
+          specialization: specialtyFilter === "all" ? undefined : specialtyFilter
+        };
 
-        console.log('Received response:', response);
+        // Log the exact URL and parameters being sent
+        const params = new URLSearchParams();
+        Object.entries(requestParams).forEach(([key, value]) => {
+          if (value !== undefined) params.append(key, value.toString());
+        });
+        console.log('API Request URL:', `/admin/users?${params.toString()}`);
+        console.log('Request Parameters:', requestParams);
+
+        const response = await AdminService.getUsers(requestParams);
+
+        // Log the raw response and parsed data
+        console.log('Raw API Response:', response);
+        console.log('Response Content:', response.content);
+        console.log('Current Specialty Filter:', specialtyFilter);
+        
+        // Log each doctor's specialty for debugging
+        if (response.content) {
+          console.log('Doctor Specialties:', response.content.map(doc => ({
+            id: doc.id,
+            name: `${doc.firstName} ${doc.lastName}`,
+            specialty: doc.specialization || 'General Medicine'
+          })));
+        }
 
         // Check if response exists and has the expected structure
         if (!response) {
@@ -229,10 +244,19 @@ export default function DoctorsPage() {
     };
 
     fetchDoctors();
-  }, [pagination.currentPage, sort, searchQuery, statusFilter]);
+  }, [pagination.currentPage, sort, searchQuery, statusFilter, specialtyFilter]);
 
   // Get all unique specialties for the filter
   const specialties = [...new Set(doctors.filter(d => d.specialization).map(d => d.specialization))];
+  
+  // Add debug logging for specialties
+  useEffect(() => {
+    console.log('Available specialties:', specialties);
+    console.log('Current specialty filter:', specialtyFilter);
+    console.log('Filtered doctors:', doctors.filter(d => 
+      specialtyFilter === 'all' || d.specialization === specialtyFilter
+    ));
+  }, [specialties, specialtyFilter, doctors]);
 
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, currentPage: page }));
@@ -320,7 +344,7 @@ export default function DoctorsPage() {
               <input
                 type="text"
                 placeholder="Search by name, email, or ID..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full text-gray-700"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -343,20 +367,23 @@ export default function DoctorsPage() {
             </div>
             <div className="flex space-x-2">
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
                 value={specialtyFilter}
                 onChange={(e) => {
+                  console.log('Selected specialty:', e.target.value);
                   setSpecialtyFilter(e.target.value);
                   setPagination(prev => ({ ...prev, currentPage: 1 }));
                 }}
               >
                 <option value="all">All Specialties</option>
-                {specialties.map(specialty => (
-                  <option key={specialty} value={specialty}>{specialty}</option>
+                {specialties.sort().map(specialty => (
+                  <option key={specialty} value={specialty}>
+                    {specialty || 'General Medicine'}
+                  </option>
                 ))}
               </select>
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);

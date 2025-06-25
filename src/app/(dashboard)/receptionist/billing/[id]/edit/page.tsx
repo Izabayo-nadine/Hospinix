@@ -132,7 +132,7 @@ export default function EditBillingPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Total Amount:</span>
-                        <span className="font-medium">${parseFloat(billing.totalAmount).toFixed(2)}</span>
+                        <span className="font-medium text-gray-700">${parseFloat(billing.totalAmount).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Amount Paid:</span>
@@ -159,7 +159,7 @@ export default function EditBillingPage() {
                       <select
                         id="status"
                         name="status"
-                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-gray-700"
                         value={formData.status}
                         onChange={handleChange}
                       >
@@ -177,7 +177,7 @@ export default function EditBillingPage() {
                       <select
                         id="paymentMethod"
                         name="paymentMethod"
-                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-gray-700"
                         value={formData.paymentMethod}
                         onChange={handleChange}
                       >
@@ -197,7 +197,7 @@ export default function EditBillingPage() {
                         id="notes"
                         name="notes"
                         rows={3}
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md text-gray-700 p-4"
                         placeholder="Additional information about this invoice"
                         value={formData.notes}
                         onChange={handleChange}

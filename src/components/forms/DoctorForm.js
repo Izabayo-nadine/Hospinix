@@ -177,7 +177,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
 
   return (
     <div className="p-4 bg-white rounded-lg">
-      <h2 className="text-xl font-semibold mb-4">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">
         {isEdit ? "Edit Doctor" : "Add New Doctor"}
       </h2>
 
@@ -199,7 +199,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.firstName ? "border-red-500" : ""
               }`}
             />
@@ -217,7 +217,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.lastName ? "border-red-500" : ""
               }`}
             />
@@ -235,7 +235,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.email ? "border-red-500" : ""
               }`}
             />
@@ -253,7 +253,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.phoneNumber ? "border-red-500" : ""
               }`}
             />
@@ -273,7 +273,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.password ? "border-red-500" : ""
                   }`}
                 />
@@ -291,7 +291,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                     errors.confirmPassword ? "border-red-500" : ""
                   }`}
                 />
@@ -313,7 +313,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="specialization"
               value={formData.specialization}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.specialization ? "border-red-500" : ""
               }`}
             >
@@ -340,7 +340,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="licenseNumber"
               value={formData.licenseNumber}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900 ${
                 errors.licenseNumber ? "border-red-500" : ""
               }`}
             />
@@ -401,7 +401,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="availability"
               value={formData.availability}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             >
               {availabilities.map((option) => (
                 <option key={option} value={option}>
@@ -420,7 +420,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="nextAvailable"
               value={formData.nextAvailable}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             />
           </div>
 
@@ -433,7 +433,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             />
           </div>
 
@@ -445,7 +445,7 @@ const DoctorForm = ({ doctor = null, onSuccess, onCancel }) => {
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-900"
             >
               <option value="Male">Male</option>
               <option value="Female">Female</option>

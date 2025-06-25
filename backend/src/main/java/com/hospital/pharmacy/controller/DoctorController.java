@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,6 +22,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/doctor")
+@PreAuthorize("hasRole('DOCTOR')")
 public class DoctorController {
 
     @Autowired
@@ -47,14 +50,8 @@ public class DoctorController {
 
     // Doctor Dashboard Statistics
     @GetMapping("/dashboard")
-    public ResponseEntity<?> getDoctorDashboard(HttpServletRequest request) {
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+    public ResponseEntity<?> getDoctorDashboard(Authentication authentication) {
+        User doctor = (User) authentication.getPrincipal();
 
         LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
@@ -73,15 +70,9 @@ public class DoctorController {
     public ResponseEntity<?> getDoctorPatients1(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         try {
             System.out.println("Doctor ID: " + doctor.getId());
@@ -94,13 +85,10 @@ public class DoctorController {
             System.out.println("Found " + patients.size() + " patients for doctor " + doctor.getId());
 
             if (patients.isEmpty()) {
-                // If no patients found with the native query, try using the doctor's ID with
-                // direct lookup
                 List<Patient> assignedPatients = patientRepository.findByAssignedDoctor(doctor);
                 System.out.println("Found " + assignedPatients.size() + " patients via direct assigned doctor lookup");
 
                 if (!assignedPatients.isEmpty()) {
-                    // If we find patients this way, use them instead
                     return ResponseEntity.ok(assignedPatients);
                 }
             }
@@ -116,15 +104,9 @@ public class DoctorController {
     @GetMapping("/patients")
     public ResponseEntity<?> getDoctorPatients(
             @RequestParam(required = false) String search,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         try {
             List<Patient> patients = appointmentRepository.findDistinctPatientsByDoctorIdAndSearch(
@@ -146,15 +128,9 @@ public class DoctorController {
             @RequestParam(required = false) Long patientId,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         try {
             System.out.println("Received date parameters - startDate: " + startDate + ", endDate: " + endDate);
@@ -227,7 +203,7 @@ public class DoctorController {
     @GetMapping("/appointments/today")
     public ResponseEntity<?> getAppointmentsToday(
             @RequestParam(required = false) Long doctorId,
-            HttpServletRequest request) {
+            Authentication authentication) {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
         LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
         List<Appointment> appointments = appointmentRepository.findByDoctorAndDateRange(doctorId, startOfDay, endOfDay);
@@ -236,27 +212,13 @@ public class DoctorController {
 
     // Complete an appointment and add notes
     @PutMapping("/appointments/{id}/complete")
+    @PreAuthorize("hasRole('DOCTOR') and @doctorService.isAppointmentOwner(authentication, #id)")
     public ResponseEntity<?> completeAppointment(
             @PathVariable Long id,
-            @RequestBody Map<String, String> payload,
-            HttpServletRequest request) {
-
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+            @RequestBody Map<String, String> payload) {
 
         return appointmentRepository.findById(id)
                 .map(appointment -> {
-                    // Verify this appointment belongs to the doctor
-                    if (!appointment.getDoctor().getId().equals(doctor.getId())) {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("message", "This appointment does not belong to you"));
-                    }
-
                     appointment.setStatus("COMPLETED");
                     appointment.setNotes(payload.get("notes"));
                     appointment.setUpdatedAt(LocalDateTime.now());
@@ -270,14 +232,9 @@ public class DoctorController {
     public ResponseEntity<?> updateAppointment(
             @PathVariable Long id,
             @RequestBody Map<String, String> statusUpdate,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !"DOCTOR".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
         String newStatus = statusUpdate.get("notes"); // Extract just the status value
         if (newStatus == null || newStatus.isEmpty()) {
             return ResponseEntity.badRequest()
@@ -297,15 +254,10 @@ public class DoctorController {
     public ResponseEntity<?> updateAppointmentStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> statusUpdate,
-            HttpServletRequest request
+            Authentication authentication
 
     ) {
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !"DOCTOR".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         String newStatus = statusUpdate.get("status"); // Extract just the status value
         if (newStatus == null || newStatus.isEmpty()) {
@@ -323,13 +275,8 @@ public class DoctorController {
     }
 
     @GetMapping("/patients/with-appointments")
-    public ResponseEntity<?> getDoctorPatientsFromAppointments(HttpServletRequest request) {
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !"DOCTOR".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
-        }
+    public ResponseEntity<?> getDoctorPatientsFromAppointments(Authentication authentication) {
+        User doctor = (User) authentication.getPrincipal();
 
         List<Patient> patients = appointmentRepository.findDistinctPatientsByDoctorAppointments(doctor.getId());
         return ResponseEntity.ok(patients);
@@ -339,15 +286,9 @@ public class DoctorController {
     @PostMapping("/prescriptions/create")
     public ResponseEntity<?> createPrescription(
             @RequestBody Prescription prescription,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         // Set the doctor
         prescription.setDoctor(doctor);
@@ -395,15 +336,9 @@ public class DoctorController {
             @RequestParam(required = false) Long patientId,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         List<Prescription> prescriptions = prescriptionRepository.findByFilters(
                 status, doctor.getId(), patientId, startDate, endDate);
@@ -415,15 +350,9 @@ public class DoctorController {
     @GetMapping("/prescriptions/{id}")
     public ResponseEntity<?> getPrescriptionById(
             @PathVariable Long id,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         return prescriptionRepository.findById(id)
                 .map(prescription -> {
@@ -442,15 +371,9 @@ public class DoctorController {
     public ResponseEntity<?> updatePrescription(
             @PathVariable Long id,
             @RequestBody Prescription updatedPrescription,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         return prescriptionRepository.findById(id)
                 .map(prescription -> {
@@ -494,15 +417,9 @@ public class DoctorController {
     @PutMapping("/prescriptions/{id}/discontinue")
     public ResponseEntity<?> discontinuePrescription(
             @PathVariable Long id,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         return prescriptionRepository.findById(id)
                 .map(prescription -> {
@@ -526,15 +443,9 @@ public class DoctorController {
             @RequestParam(required = false) String ward,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         try {
             List<Bed> beds;
@@ -560,15 +471,9 @@ public class DoctorController {
     public ResponseEntity<?> updateBedStatus(
             @PathVariable String bedId,
             @RequestBody Map<String, String> payload,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         String status = payload.get("status");
         if (status == null || status.isEmpty()) {
@@ -594,15 +499,9 @@ public class DoctorController {
     public ResponseEntity<?> assignPatientToBed(
             @PathVariable String bedId,
             @RequestBody Map<String, String> payload,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         String patientId = payload.get("patientId");
         if (patientId == null || patientId.isEmpty()) {
@@ -655,15 +554,9 @@ public class DoctorController {
     @PutMapping("/beds/{bedId}/discharge")
     public ResponseEntity<?> dischargePatient(
             @PathVariable String bedId,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User doctor = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (doctor == null || !role.equals("DOCTOR")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User doctor = (User) authentication.getPrincipal();
 
         Bed bed = bedRepository.findByBedId(bedId);
         if (bed == null) {

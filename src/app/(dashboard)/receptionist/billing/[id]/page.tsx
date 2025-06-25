@@ -118,19 +118,19 @@ export default function BillingDetailsPage() {
             <div>
               <h2 className="font-medium text-lg text-gray-900 mb-2">Patient Information</h2>
               <div className="space-y-1 text-sm">
-                <p><span className="text-gray-500">Name:</span> {billing.patient.firstName} {billing.patient.lastName}</p>
-                <p><span className="text-gray-500">Patient ID:</span> {billing.patient.patientId}</p>
-                <p><span className="text-gray-500">Phone:</span> {billing.patient.phoneNumber || "N/A"}</p>
-                <p><span className="text-gray-500">Email:</span> {billing.patient.email || "N/A"}</p>
+                <p className="text-gray-700"><span className="text-gray-500">Name:</span> {billing.patient.firstName} {billing.patient.lastName}</p>
+                <p className="text-gray-700"><span className="text-gray-500">Patient ID:</span> {billing.patient.patientId}</p>
+                <p className="text-gray-700"><span className="text-gray-500">Phone:</span> {billing.patient.phoneNumber || "N/A"}</p>
+                <p className="text-gray-700"><span className="text-gray-500">Email:</span> {billing.patient.email || "N/A"}</p>
               </div>
             </div>
             
             <div>
               <h2 className="font-medium text-lg text-gray-900 mb-2">Invoice Information</h2>
               <div className="space-y-1 text-sm">
-                <p><span className="text-gray-500">Invoice Date:</span> {formatDate(billing.billDate)}</p>
-                <p><span className="text-gray-500">Due Date:</span> {formatDate(billing.dueDate)}</p>
-                <p>
+                <p className="text-gray-700"><span className="text-gray-500">Invoice Date:</span> {formatDate(billing.billDate)}</p>
+                <p className="text-gray-700"><span className="text-gray-500">Due Date:</span> {formatDate(billing.dueDate)}</p>
+                <p className="text-gray-700">
                   <span className="text-gray-500">Status:</span> 
                   <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
                     billing.status === 'PAID' ? 'bg-green-100 text-green-800' :
@@ -143,7 +143,7 @@ export default function BillingDetailsPage() {
                      billing.status === 'PARTIALLY_PAID' ? 'Partial Payment' : billing.status}
                   </span>
                 </p>
-                <p><span className="text-gray-500">Payment Method:</span> {billing.paymentMethod || "N/A"}</p>
+                <p className="text-gray-700"><span className="text-gray-500">Payment Method:</span> {billing.paymentMethod || "N/A"}</p>
               </div>
             </div>
           </div>

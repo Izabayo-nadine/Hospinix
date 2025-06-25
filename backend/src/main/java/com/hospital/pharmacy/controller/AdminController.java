@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +34,7 @@ import java.nio.file.StandardCopyOption;
 
 @RestController
 @RequestMapping("/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
@@ -84,31 +88,13 @@ public class AdminController {
 
     // User Management - Get all users by role
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getUsersByRole(
             @RequestParam(required = false) String role,
             @RequestParam(required = false) Boolean isActive,
-            // For backward compatibility
-            @RequestParam(required = false) String search
-    // HttpServletRequest request
-    ) {
-
+            @RequestParam(required = false) String search) {
         try {
-            logger.info("Getting users with filters - role: {}, isActive: {}, search: {}",
-                    role, isActive, search);
-
-            // User user = (User) request.getAttribute("user");
-            // String userRole = (String) request.getAttribute("role");
-
-            // if (user == null || !userRole.equals("ADMIN")) {
-            // logger.warn("Access denied for user: {}, role: {}", user != null ?
-            // user.getUserId() : "null", userRole);
-            // return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            // .body(Map.of("message", "Access denied"));
-            // }
-
-            // Use active parameter if isActive is null (for backward compatibility)
-            logger.info("Using effectiveActive: {}", isActive);
-
+            logger.info("Getting users with filters - role: {}, isActive: {}, search: {}", role, isActive, search);
             List<User> users = userRepository.findByFilters(role, isActive, search);
             logger.info("Found {} users matching criteria", users.size());
             return ResponseEntity.ok(users);
@@ -121,20 +107,11 @@ public class AdminController {
 
     // User Management - Create new user (doctor, pharmacist, receptionist, admin)
     @PostMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(@RequestBody User newUser) {
         try {
             logger.info("Creating new user with email: {}, role: {}", newUser.getEmail(), newUser.getRole());
-            //
-            // User admin = (User) request.getAttribute("user");
-            // String adminRole = (String) request.getAttribute("role");
 
-            // if (admin == null || !adminRole.equals("ADMIN")) {
-            // logger.warn("Access denied for user creating a new user");
-            // return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            // .body(Map.of("message", "Access denied"));
-            // }
-
-            // Check if email already exists
             if (userRepository.existsByEmail(newUser.getEmail())) {
                 logger.warn("Email already in use: {}", newUser.getEmail());
                 return ResponseEntity.badRequest()
@@ -187,34 +164,16 @@ public class AdminController {
 
     // User Management - Update user
     @PutMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,
-            @RequestBody User updatedUser,
-            HttpServletRequest request) {
-
+            @RequestBody User updatedUser) {
         try {
             logger.info("Updating user with ID: {}", id);
-
-            User admin = (User) request.getAttribute("user");
-            String adminRole = (String) request.getAttribute("role");
-
-            if (admin == null || !adminRole.equals("ADMIN")) {
-                logger.warn("Access denied for user updating a user");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("message", "Access denied"));
-            }
-
-            try {
-                // Use the service to handle the update properly
-                User updated = userService.update(id, updatedUser);
-                return ResponseEntity.ok(updated);
-            } catch (Exception e) {
-                logger.error("Error updating user: {}", e.getMessage(), e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("message", "Error updating user: " + e.getMessage()));
-            }
+            User updated = userService.update(id, updatedUser);
+            return ResponseEntity.ok(updated);
         } catch (Exception e) {
-            logger.error("Error in user update operation: {}", e.getMessage(), e);
+            logger.error("Error updating user: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Error updating user: " + e.getMessage()));
         }
@@ -222,20 +181,21 @@ public class AdminController {
 
     // User Management - Upload profile image
     @PostMapping("/users/{id}/profile-image")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public ResponseEntity<?> uploadProfileImage(
             @PathVariable Long id,
-            @RequestParam("imageFile") MultipartFile imageFile,
-            HttpServletRequest request) {
-
+            @RequestParam("imageFile") MultipartFile imageFile) {
         try {
             logger.info("Uploading profile image for user with ID: {}", id);
 
-            // Basic access control (can be refined based on your auth logic)
-            User currentUser = (User) request.getAttribute("user");
-            if (currentUser == null || (!currentUser.getRole().equals("ADMIN") && !currentUser.getId().equals(id))) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) auth.getPrincipal();
+
+            if (!currentUser.getRole().equals("ADMIN") && !currentUser.getId().equals(id)) {
                 logger.warn("Access denied for user {} to upload profile image for user {}",
-                        currentUser != null ? currentUser.getUserId() : "null", id);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Access denied"));
+                        currentUser.getUserId(), id);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Access denied"));
             }
 
             // Check if the file is empty
@@ -281,7 +241,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Error saving profile image file: " + e.getMessage()));
         } catch (Exception e) {
-            logger.error("Error uploading profile image for user {}", id, e);
+            logger.error("Error uploading profile image", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Error uploading profile image: " + e.getMessage()));
         }
@@ -350,19 +310,8 @@ public class AdminController {
 
     // Patient Management - Get patient by ID
     @GetMapping("/patients/{id}")
-    public ResponseEntity<?> getPatientById(
-            @PathVariable Long id,
-            HttpServletRequest request) {
-
-        User admin = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (admin == null || !role.equals("ADMIN")) {
-            logger.warn("Access denied for retrieving patient details");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
-
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getPatientById(@PathVariable Long id) {
         return patientRepository.findById(id)
                 .map(patient -> ResponseEntity.ok(patient))
                 .orElse(ResponseEntity.notFound().build());

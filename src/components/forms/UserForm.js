@@ -200,7 +200,7 @@ const UserForm = ({ user = null, role = null, onSuccess, onCancel }) => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">
+      <h2 className="text-xl font-semibold mb-4 text-gray-700">
         {isEdit ? "Edit User" : "Add New User"}
       </h2>
 

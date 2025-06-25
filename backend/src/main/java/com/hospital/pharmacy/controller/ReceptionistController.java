@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/receptionist")
+@PreAuthorize("hasRole('RECEPTIONIST')")
 public class ReceptionistController {
 
     @Autowired
@@ -36,14 +39,8 @@ public class ReceptionistController {
 
     // Receptionist Dashboard Statistics
     @GetMapping("/dashboard")
-    public ResponseEntity<?> getReceptionistDashboard(HttpServletRequest request) {
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+    public ResponseEntity<?> getReceptionistDashboard(Authentication authentication) {
+        User receptionist = (User) authentication.getPrincipal();
 
         // Get today's date
         LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
@@ -61,16 +58,7 @@ public class ReceptionistController {
     @GetMapping("/patients")
     public ResponseEntity<?> getPatients(
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String search,
-            HttpServletRequest request) {
-
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+            @RequestParam(required = false) String search) {
 
         List<Patient> patients;
         try {
@@ -85,29 +73,18 @@ public class ReceptionistController {
         return ResponseEntity.ok(patients);
     }
 
-    //appointmentbetweenstarandend
+    // appointmentbetweenstarandend
     @GetMapping("/between")
-   public ResponseEntity<?> getAppointmentsToday(){
-    LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-    LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
-    List<Appointment> appointments = appointmentRepository.findByAppointmentDateTimeBetween(startOfDay, endOfDay);
-    return ResponseEntity.ok(appointments);
-   }
+    public ResponseEntity<?> getAppointmentsToday() {
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+        List<Appointment> appointments = appointmentRepository.findByAppointmentDateTimeBetween(startOfDay, endOfDay);
+        return ResponseEntity.ok(appointments);
+    }
 
     // Register a new patient
     @PostMapping("/patients")
-    public ResponseEntity<?> registerPatient(
-            @RequestBody Patient patient,
-            HttpServletRequest request) {
-
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
-
+    public ResponseEntity<?> registerPatient(@RequestBody Patient patient) {
         // Generate a unique patient ID
         patient.setPatientId("PAT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
@@ -122,7 +99,6 @@ public class ReceptionistController {
         }
 
         Patient savedPatient = patientRepository.save(patient);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(savedPatient);
     }
 
@@ -130,16 +106,7 @@ public class ReceptionistController {
     @PutMapping("/patients/{id}")
     public ResponseEntity<?> updatePatient(
             @PathVariable Long id,
-            @RequestBody Patient updatedPatient,
-            HttpServletRequest request) {
-
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+            @RequestBody Patient updatedPatient) {
 
         try {
             System.out.println("Updating patient with ID: " + id);
@@ -204,17 +171,8 @@ public class ReceptionistController {
 
     // Get available doctors
     @GetMapping("/doctors")
-    public ResponseEntity<?> getAvailableDoctors(HttpServletRequest request) {
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
-
+    public ResponseEntity<?> getAvailableDoctors() {
         List<User> doctors = userRepository.findByFilters("DOCTOR", true, null);
-
         return ResponseEntity.ok(doctors);
     }
 
@@ -222,15 +180,9 @@ public class ReceptionistController {
     @PostMapping("/appointments")
     public ResponseEntity<?> scheduleAppointment(
             @RequestBody Map<String, Object> appointmentRequest,
-            HttpServletRequest request) {
+            Authentication authentication) {
 
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+        User receptionist = (User) authentication.getPrincipal();
 
         try {
             // Extract data from request
@@ -557,18 +509,10 @@ public class ReceptionistController {
 
     // Update only the appointment status
     @PutMapping("/appointments/{id}/status")
+    @PreAuthorize("hasRole('RECEPTIONIST') and @appointmentService.isAppointmentOwner(authentication, #id)")
     public ResponseEntity<?> updateAppointmentStatus(
             @PathVariable Long id,
-            @RequestBody Map<String, String> statusUpdate,
-            HttpServletRequest request) {
-
-        User receptionist = (User) request.getAttribute("user");
-        String role = (String) request.getAttribute("role");
-
-        if (receptionist == null || !role.equals("RECEPTIONIST")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Access denied"));
-        }
+            @RequestBody Map<String, String> statusUpdate) {
 
         try {
             String newStatus = statusUpdate.get("status");
@@ -577,12 +521,9 @@ public class ReceptionistController {
                         .body(Map.of("message", "Status is required"));
             }
 
-            // Find the appointment
             return appointmentRepository.findById(id)
                     .map(appointment -> {
-                        // Update only the status
                         appointment.setStatus(newStatus);
-
                         Appointment updatedAppointment = appointmentRepository.save(appointment);
                         return ResponseEntity.ok(updatedAppointment);
                     })
@@ -825,6 +766,7 @@ public class ReceptionistController {
                         String paymentMethod = (String) paymentRequest.get("paymentMethod");
                         BigDecimal paymentAmount = new BigDecimal(paymentRequest.get("amount").toString());
                         String notes = (String) paymentRequest.get("notes");
+                        String referenceNumber = (String) paymentRequest.get("referenceNumber");
 
                         // Create a new payment record
                         Payment payment = new Payment();
@@ -832,6 +774,7 @@ public class ReceptionistController {
                         payment.setAmount(paymentAmount);
                         payment.setPaymentMethod(paymentMethod);
                         payment.setNotes(notes);
+                        payment.setReferenceNumber(referenceNumber);
                         payment.setReceivedBy(receptionist);
 
                         // Add payment to billing
@@ -883,6 +826,7 @@ public class ReceptionistController {
             String paymentMethod = (String) paymentRequest.get("paymentMethod");
             BigDecimal paymentAmount = new BigDecimal(paymentRequest.get("amount").toString());
             String notes = (String) paymentRequest.get("notes");
+            String referenceNumber = (String) paymentRequest.get("referenceNumber");
 
             // Create a new payment record
             Payment payment = new Payment();
@@ -890,6 +834,7 @@ public class ReceptionistController {
             payment.setAmount(paymentAmount);
             payment.setPaymentMethod(paymentMethod);
             payment.setNotes(notes);
+            payment.setReferenceNumber(referenceNumber);
             payment.setReceivedBy(receptionist);
 
             // Add payment to billing
