@@ -53,38 +53,45 @@ function PharmacistMedicinesContent() {
 
         console.log("Raw response:", apiResponse);
 
-        if (!Array.isArray(response)) {
+        const safeResponse = Array.isArray(response) ? response.filter(Boolean) : [];
+
+        if (!Array.isArray(safeResponse)) {
           throw new Error("Invalid response format");
         }
 
-        const formattedMedicines = response.map((med: any) => ({
-          id: med.id || med.medicineId || `MED-${Math.floor(Math.random() * 1000)}`,
-          medicineId: med.medicineId,
-          name: med.name || "Unknown Medicine",
-          category: med.category || med.categoryName || "Uncategorized",
-          description: med.description || "",
-          manufacturer: med.manufacturer || "",
-          company: med.company?.name || med.companyName || "Unknown",
-          batchNumber: med.batchNumber || "N/A",
-          expiry: med.expiryDate ? new Date(med.expiryDate).toLocaleDateString() : "N/A",
-          expiryDate: med.expiryDate,
-          stock: med.stock || 0,
-          stockStatus: getStockStatusFromQuantity(med.stock),
-          price: med.price || 0,
-          requiresPrescription: med.requiresPrescription || false,
-          dosageForm: med.dosageForm || "Tablet",
-          strength: med.dosage || med.strength || "N/A",
-          interactions: Array.isArray(med.interactions)
-            ? med.interactions
-            : med.interactions
-            ? med.interactions.split(",")
-            : [],
-          sideEffects: Array.isArray(med.sideEffects)
-            ? med.sideEffects
-            : med.sideEffects
-            ? med.sideEffects.split(",")
-            : [],
-        }));
+        const formattedMedicines = safeResponse.map((med: any) => {
+          const medicine = med && typeof med === "object" ? med : {};
+          const medicineId = medicine.medicineId ?? medicine.M_ID ?? medicine.id ?? "";
+
+          return {
+            id: medicineId || medicine.id || `MED-${Math.floor(Math.random() * 1000)}`,
+            medicineId,
+            name: medicine.name ?? medicine.M_NAME ?? "Unknown Medicine",
+            category: medicine.category ?? medicine.M_CATEGORY ?? medicine.categoryName ?? "Uncategorized",
+            description: medicine.description || "",
+            manufacturer: medicine.manufacturer || "",
+            company: medicine.company?.name || medicine.companyName || "Unknown",
+            batchNumber: medicine.batchNumber || "N/A",
+            expiry: medicine.expiryDate ? new Date(medicine.expiryDate).toLocaleDateString() : "N/A",
+            expiryDate: medicine.expiryDate,
+            stock: Number(medicine.stock ?? medicine.quantity ?? 0) || 0,
+            stockStatus: getStockStatusFromQuantity(Number(medicine.stock ?? medicine.quantity ?? 0) || 0),
+            price: Number(medicine.price ?? 0) || 0,
+            requiresPrescription: Boolean(medicine.requiresPrescription),
+            dosageForm: medicine.dosageForm || "Tablet",
+            strength: medicine.dosage || medicine.strength || "N/A",
+            interactions: Array.isArray(medicine.interactions)
+              ? medicine.interactions
+              : medicine.interactions
+                ? medicine.interactions.split(",")
+                : [],
+            sideEffects: Array.isArray(medicine.sideEffects)
+              ? medicine.sideEffects
+              : medicine.sideEffects
+                ? medicine.sideEffects.split(",")
+                : [],
+          };
+        });
 
         const uniqueCategories = [
           "all",

@@ -58,20 +58,35 @@ export default function PharmacistDashboard() {
         }
   
         // Validate that medicinesData is an array before calling map
-        const formattedMedicines = Array.isArray(medicinesData) ? medicinesData.map((med: any) => ({
-          id: med.id || med.medicineId,
-          medicineId: med.medicineId,
-          name: med.name,
-          category: med.category,
-          stock: med.stock || 0,
-          stockStatus: med.stockStatus,
-          reorderLevel: med.reorderLevel || Math.floor((med.stock || 20) * 1.5) || 30,
-          expiry: med.expiryDate ? new Date(med.expiryDate).toLocaleDateString() : "N/A",
-          expiryDate: med.expiryDate,
-          price: med.price,
-          requiresPrescription: med.requiresPrescription,
-          company: med.company?.name || med.companyName || "Unknown"
-        })) : [];
+        const formattedMedicines = Array.isArray(medicinesData)
+          ? medicinesData
+              .filter((med: any) => med && typeof med === "object")
+              .map((med: any) => {
+                const medicine = med;
+                const medicineId =
+                  medicine.medicineId ?? medicine.M_ID ?? medicine.id ?? "";
+
+                return {
+                  id: medicineId || medicine.id || "",
+                  medicineId,
+                  name: medicine.name ?? medicine.M_NAME ?? "Unknown Medicine",
+                  category: medicine.category ?? medicine.M_CATEGORY ?? "Uncategorized",
+                  stock: Number(medicine.stock ?? medicine.quantity ?? 0) || 0,
+                  stockStatus: medicine.stockStatus,
+                  reorderLevel:
+                    medicine.reorderLevel ||
+                    Math.floor((Number(medicine.stock ?? medicine.quantity ?? 20) || 20) * 1.5) ||
+                    30,
+                  expiry: medicine.expiryDate
+                    ? new Date(medicine.expiryDate).toLocaleDateString()
+                    : "N/A",
+                  expiryDate: medicine.expiryDate,
+                  price: medicine.price,
+                  requiresPrescription: medicine.requiresPrescription,
+                  company: medicine.company?.name || medicine.companyName || "Unknown",
+                };
+              })
+          : [];
   
         setStats(dashboardStats);
         setMedicines(formattedMedicines);

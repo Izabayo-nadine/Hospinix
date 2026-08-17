@@ -53,9 +53,12 @@ export default function Inventory() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (item) =>
-          item.name.toLowerCase().includes(query) ||
-          item.sku.toLowerCase().includes(query) ||
-          item.manufacturer.toLowerCase().includes(query)
+          item &&
+          (
+            item.name?.toLowerCase?.().includes(query) ||
+            item.sku?.toLowerCase?.().includes(query) ||
+            item.manufacturer?.toLowerCase?.().includes(query)
+          )
       );
     }
 

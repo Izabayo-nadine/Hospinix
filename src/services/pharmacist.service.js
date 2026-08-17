@@ -1,6 +1,59 @@
 import api from "./api";
 import { API_ENDPOINTS } from "../config"; // Make sure this file exists and is correctly exported
 
+const normalizeMedicineRecord = (medicine) => {
+  if (!medicine || typeof medicine !== "object") {
+    return null;
+  }
+
+  const medicineId =
+    medicine.medicineId ??
+    medicine.M_ID ??
+    medicine.id ??
+    medicine.medId ??
+    medicine.MEDICINE_ID ??
+    "";
+
+  const name =
+    medicine.name ?? medicine.M_NAME ?? medicine.medName ?? "Unknown Medicine";
+
+  const category =
+    medicine.category ??
+    medicine.M_CATEGORY ??
+    medicine.categoryName ??
+    medicine.CATEGORY_NAME ??
+    "Uncategorized";
+
+  const stock = Number.isFinite(medicine.stock)
+    ? medicine.stock
+    : Number(medicine.quantity ?? medicine.quantityInStock ?? 0) || 0;
+
+  return {
+    ...medicine,
+    id: medicineId || medicine.id || "",
+    medicineId,
+    name,
+    category,
+    stock,
+  };
+};
+
+const normalizeMedicineList = (payload) => {
+  const items = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : Array.isArray(payload?.content)
+        ? payload.content
+        : Array.isArray(payload?.medicines)
+          ? payload.medicines
+          : [];
+
+  return items
+    .map((medicine) => normalizeMedicineRecord(medicine))
+    .filter(Boolean);
+};
+
 class PharmacistService {
   // Dashboard related methods
   async getDashboardStats() {
@@ -26,14 +79,14 @@ class PharmacistService {
       const isPostgresTypeError =
         error.message?.includes("function lower(bytea) does not exist") ||
         error.response?.data?.message?.includes(
-          "function lower(bytea) does not exist"
+          "function lower(bytea) does not exist",
         );
 
       // If it's the specific Postgres error, try a fallback approach without using search parameters
       if (isPostgresTypeError && params.name) {
         try {
           console.log(
-            "Detected PostgreSQL type error, trying fallback approach"
+            "Detected PostgreSQL type error, trying fallback approach",
           );
           // Get all companies without search parameters
           const allCompaniesResponse = await api.get(API_ENDPOINTS.COMPANIES, {
@@ -45,7 +98,7 @@ class PharmacistService {
             const searchTerm = params.name.toLowerCase();
             return allCompaniesResponse.filter(
               (company) =>
-                company.name && company.name.toLowerCase().includes(searchTerm)
+                company.name && company.name.toLowerCase().includes(searchTerm),
             );
           }
           return allCompaniesResponse;
@@ -62,7 +115,7 @@ class PharmacistService {
       ) {
         console.log(`Retrying getCompanies (attempt ${retryCount + 1})...`);
         await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (retryCount + 1))
+          setTimeout(resolve, 1000 * (retryCount + 1)),
         );
         return this.getCompanies(params, retryCount + 1);
       }
@@ -106,7 +159,7 @@ class PharmacistService {
     try {
       const response = await api.put(
         `${API_ENDPOINTS.COMPANIES}/${companyId}`,
-        companyData
+        companyData,
       );
       return response.data;
     } catch (error) {
@@ -138,21 +191,21 @@ class PharmacistService {
       const isPostgresTypeError =
         error.message?.includes("function lower(bytea) does not exist") ||
         error.response?.data?.message?.includes(
-          "function lower(bytea) does not exist"
+          "function lower(bytea) does not exist",
         );
 
       // If it's the specific Postgres error, try a fallback approach without using search parameters
       if (isPostgresTypeError && params.name) {
         try {
           console.log(
-            "Detected PostgreSQL type error, trying fallback approach"
+            "Detected PostgreSQL type error, trying fallback approach",
           );
           // Get all distributors without search parameters
           const allDistributorsResponse = await api.get(
             API_ENDPOINTS.DISTRIBUTORS,
             {
               params: { ...params, name: undefined },
-            }
+            },
           );
 
           // If successful, manually filter the results
@@ -164,7 +217,7 @@ class PharmacistService {
             return allDistributorsResponse.filter(
               (distributor) =>
                 distributor.name &&
-                distributor.name.toLowerCase().includes(searchTerm)
+                distributor.name.toLowerCase().includes(searchTerm),
             );
           }
           return allDistributorsResponse;
@@ -181,7 +234,7 @@ class PharmacistService {
       ) {
         console.log(`Retrying getDistributors (attempt ${retryCount + 1})...`);
         await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (retryCount + 1))
+          setTimeout(resolve, 1000 * (retryCount + 1)),
         );
         return this.getDistributors(params, retryCount + 1);
       }
@@ -215,7 +268,7 @@ class PharmacistService {
       };
       const response = await api.post(
         API_ENDPOINTS.DISTRIBUTORS,
-        formattedData
+        formattedData,
       );
       return response.data;
     } catch (error) {
@@ -233,7 +286,7 @@ class PharmacistService {
     try {
       const response = await api.put(
         `${API_ENDPOINTS.DISTRIBUTORS}/${distributorId}`,
-        distributorData
+        distributorData,
       );
       return response.data;
     } catch (error) {
@@ -245,7 +298,7 @@ class PharmacistService {
   async getDistributorById(distributorId) {
     try {
       const response = await api.get(
-        `${API_ENDPOINTS.DISTRIBUTORS}/${distributorId}`
+        `${API_ENDPOINTS.DISTRIBUTORS}/${distributorId}`,
       );
       return response.data;
     } catch (error) {
@@ -259,7 +312,7 @@ class PharmacistService {
     try {
       // Try the API first
       const response = await api.get(API_ENDPOINTS.MEDICINES, { params });
-      return response.data;
+      return normalizeMedicineList(response.data ?? response);
     } catch (error) {
       console.error("Error fetching medicines:", error);
 
@@ -267,14 +320,14 @@ class PharmacistService {
       const isPostgresTypeError =
         error.message?.includes("function lower(bytea) does not exist") ||
         error.response?.data?.message?.includes(
-          "function lower(bytea) does not exist"
+          "function lower(bytea) does not exist",
         );
 
       // If it's the specific Postgres error, try a fallback approach without using search parameters
       if (isPostgresTypeError) {
         try {
           console.log(
-            "Detected PostgreSQL type error, trying fallback approach"
+            "Detected PostgreSQL type error, trying fallback approach",
           );
           // Keep essential parameters like companyId and distributorId but remove text search parameters
           const safeParams = {
@@ -298,7 +351,7 @@ class PharmacistService {
             return allMedicinesResponse.filter(
               (medicine) =>
                 medicine.name &&
-                medicine.name.toLowerCase().includes(searchTerm)
+                medicine.name.toLowerCase().includes(searchTerm),
             );
           }
 
@@ -316,7 +369,7 @@ class PharmacistService {
       ) {
         console.log(`Retrying getMedicines (attempt ${retryCount + 1})...`);
         await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (retryCount + 1))
+          setTimeout(resolve, 1000 * (retryCount + 1)),
         );
         return this.getMedicines(params, retryCount + 1);
       }
@@ -344,7 +397,7 @@ class PharmacistService {
     try {
       const response = await api.put(
         `${API_ENDPOINTS.MEDICINES}/${medicineId}`,
-        medicineData
+        medicineData,
       );
       return response.data;
     } catch (error) {
@@ -356,7 +409,7 @@ class PharmacistService {
   async getMedicineById(medicineId) {
     try {
       const response = await api.get(
-        `${API_ENDPOINTS.MEDICINES}/${medicineId}`
+        `${API_ENDPOINTS.MEDICINES}/${medicineId}`,
       );
       return response.data;
     } catch (error) {
@@ -379,7 +432,7 @@ class PharmacistService {
   async fillPrescription(prescriptionId) {
     try {
       const response = await api.put(
-        `/pharmacist/prescriptions/${prescriptionId}/fill`
+        `/pharmacist/prescriptions/${prescriptionId}/fill`,
       );
       return response;
     } catch (error) {
@@ -392,7 +445,7 @@ class PharmacistService {
     try {
       console.log(`Fetching prescription details for ID: ${prescriptionId}`);
       const response = await api.get(
-        `${API_ENDPOINTS.PRESCRIPTIONS}/${prescriptionId}`
+        `${API_ENDPOINTS.PRESCRIPTIONS}/${prescriptionId}`,
       );
       console.log("Prescription details response:", response.data);
       return response.data;
@@ -401,12 +454,12 @@ class PharmacistService {
       if (error.response) {
         if (error.response.status === 403) {
           throw new Error(
-            "You don't have permission to view this prescription. Please contact your administrator."
+            "You don't have permission to view this prescription. Please contact your administrator.",
           );
         }
         if (error.response.status === 404) {
           throw new Error(
-            "Prescription not found. It may have been deleted or you may not have access to it."
+            "Prescription not found. It may have been deleted or you may not have access to it.",
           );
         }
         console.error("Server error response:", error.response.data);
@@ -431,9 +484,9 @@ class PharmacistService {
   async getLowStockMedicines() {
     try {
       const response = await api.get(
-        API_ENDPOINTS.LOW_STOCK || API_ENDPOINTS.CRITICAL
+        API_ENDPOINTS.LOW_STOCK || API_ENDPOINTS.CRITICAL,
       );
-      return response.data;
+      return normalizeMedicineList(response.data ?? response);
     } catch (error) {
       console.error("Error fetching low stock medicines:", error);
       throw error;
