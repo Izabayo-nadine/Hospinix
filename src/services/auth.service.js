@@ -81,15 +81,13 @@ const AuthService = {
     }
   },
 
-  // New method to upload profile image
   async uploadProfileImage(userId, imageFile) {
     try {
       const formData = new FormData();
       formData.append("imageFile", imageFile);
 
-      // Note: The backend endpoint is under /admin.
-      // In a real app, you might have a more general /users endpoint
-      // or handle this based on user role.
+      console.log('Uploading profile image for user:', userId);
+
       const response = await api.post(
         `/admin/users/${userId}/profile-image`,
         formData,
@@ -100,8 +98,24 @@ const AuthService = {
         }
       );
 
-      // Assuming the backend returns the updated user or image URL
-      const updatedUser = response.data; // Assuming response.data contains the user object or at least imageUrl
+      console.log('Upload response:', response.data);
+
+      // Extract imageUrl from response
+      const imageUrl = response.data.imageUrl || response.data.profileImage;
+
+      if (!imageUrl) {
+        console.error('No imageUrl in response:', response.data);
+        throw new Error('No image URL returned from server');
+      }
+
+      // Construct full URL (backend base URL + image path)
+      const baseURL = api.defaults.baseURL || 'http://localhost:8080/api';
+      const backendBaseURL = baseURL.replace('/api', ''); // Remove /api to get base
+      const fullImageUrl = imageUrl.startsWith('http')
+        ? imageUrl
+        : `${backendBaseURL}${imageUrl}`;
+
+      console.log('Full image URL:', fullImageUrl);
 
       // Update user data in localStorage with the new profile image URL
       const currentUserStr = localStorage.getItem("user");
@@ -109,16 +123,18 @@ const AuthService = {
         const currentUser = JSON.parse(currentUserStr);
         const updatedCurrentUser = {
           ...currentUser,
-          profileImage: updatedUser.imageUrl,
+          profileImage: fullImageUrl,
         };
         localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
-        console.log(
-          "localStorage user profileImage updated:",
-          updatedUser.imageUrl
-        );
+        console.log("localStorage user profileImage updated:", fullImageUrl);
       }
 
-      return updatedUser;
+      // Return the response with full URL
+      return {
+        ...response.data,
+        imageUrl: fullImageUrl,
+        profileImage: fullImageUrl
+      };
     } catch (error) {
       console.error("Error uploading profile image:", error);
       throw error;

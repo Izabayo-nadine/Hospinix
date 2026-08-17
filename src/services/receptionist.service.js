@@ -1,7 +1,7 @@
 import api from "./api";
 
 const ReceptionistService = {
-  
+
   getDashboardStats: async () => {
     const response = await api.get("/receptionist/dashboard");
     return response.data;
@@ -9,7 +9,7 @@ const ReceptionistService = {
 
   getTodayAppointments: async () => {
     const response = await api.get("/receptionist/between");
-    console.log("data from  reception/appointments: "+response.data)
+    console.log("data from  reception/appointments: " + response.data)
     return response.data;
   },
 
@@ -40,15 +40,14 @@ const ReceptionistService = {
       }
 
       console.log(
-        `Fetching appointments with params: ${
-          params.toString() || "no parameters"
+        `Fetching appointments with params: ${params.toString() || "no parameters"
         }`
       );
 
       const response = await api.get(
         `/receptionist/appointments?${params.toString()}`
       );
-    console.log("data from  reception/appointments: "+response.data)
+      console.log("data from  reception/appointments: " + response.data)
       return response.data;
     } catch (error) {
       console.error("Error in getAppointments API call:", error);
@@ -181,7 +180,7 @@ const ReceptionistService = {
   },
 
   getAppointmentById: async (id) => {
-    const response = await api.get(`/receptionist/appointments/${id}`);
+    const response = await api.get(`/appointments/${id}`);
     return response.data;
   },
 
@@ -200,8 +199,7 @@ const ReceptionistService = {
 
     // Log what we're doing
     console.log(
-      `Fetching billings with limited params: ${
-        params.toString() || "no parameters"
+      `Fetching billings with limited params: ${params.toString() || "no parameters"
       }`
     );
     console.log(

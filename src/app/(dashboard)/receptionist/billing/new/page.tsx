@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import ReceptionistService from "@/services/receptionist.service";
 
-export default function NewBillingPage() {
+function NewBillingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
@@ -383,4 +384,12 @@ export default function NewBillingPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+export default function NewBillingPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <NewBillingPageContent />
+    </Suspense>
+  );
+}

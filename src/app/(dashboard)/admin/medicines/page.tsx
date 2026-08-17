@@ -2,10 +2,11 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminService from "@/services/admin.service";
 
-export default function MedicinesPage() {
+function MedicinesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -273,4 +274,12 @@ export default function MedicinesPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+export default function MedicinesPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <MedicinesPageContent />
+    </Suspense>
+  );
+}

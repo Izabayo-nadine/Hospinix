@@ -194,42 +194,65 @@ export default function ReceptionistsPage() {
   const handleToggleStatus = async (receptionist: Receptionist) => {
     try {
       if (!receptionist.originalUser) return;
-      
+  
       const newStatus = !receptionist.originalUser.isActive;
+  
+      // 1. Update
       await AdminService.updateUser(receptionist.originalUser.id, { isActive: newStatus });
-      
-      // Refresh the current page
+  
+      // 2. Refresh list — same way as useEffect
+      setLoading(true); // ← nice feedback
+  
+      const sortParam = `${sort.key},${sort.direction}`;
+  
       const response = await AdminService.getUsers({
         role: "RECEPTIONIST",
-        page: pagination.currentPage,
+        page: pagination.currentPage - 1,
         size: pagination.itemsPerPage,
-        sort: `${sort.key},${sort.direction}`,
+        sort: sortParam,
         search: searchQuery,
-        active: statusFilter === "all" ? undefined : statusFilter === "Active"
-      }) as PaginatedResponse<User>;
-
-      if (!response || !Array.isArray(response.content)) {
-        throw new Error("Invalid response format from server");
-      }
-
-      const formattedReceptionists = response.content.map((user: User) => ({
+        active: statusFilter === "all" ? undefined : statusFilter === "Active",
+      });
+  
+      // ───── Same defensive parsing as in useEffect ─────
+      const content = Array.isArray(response) ? response : response.content ?? [];
+  
+      const totalPages = response.totalPages ?? Math.ceil(content.length / pagination.itemsPerPage);
+      const totalElements = response.totalElements ?? content.length;
+  
+      // Optional: you can keep client-side sort if you want
+      const sortedContent = [...content].sort((a, b) => {
+        if (sort.key === "firstName") {
+          const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+          const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+          return sort.direction === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        }
+        // ... rest of your sort logic
+        return 0;
+      });
+  
+      const formattedReceptionists = sortedContent.map((user: User) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
         phone: user.phoneNumber || "N/A",
         status: user.isActive ? "Active" : "Inactive",
-        originalUser: user
+        originalUser: user,
       }));
-
+  
       setReceptionists(formattedReceptionists);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
-        totalPages: response.totalPages,
-        totalItems: response.totalElements
+        totalPages,
+        totalItems: totalElements,
       }));
+  
+      setError("");
     } catch (err) {
-      console.error("Error updating receptionist status:", err);
-      alert("Failed to update receptionist status. Please try again.");
+      console.error("Toggle status failed:", err);
+      alert("Failed to update status");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -249,7 +272,7 @@ export default function ReceptionistsPage() {
               <input
                 type="text"
                 placeholder="Search by name or email..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full text-gray-700"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 w-full text-gray-700"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -271,7 +294,7 @@ export default function ReceptionistsPage() {
               </svg>
             </div>
             <select
-              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
+              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);

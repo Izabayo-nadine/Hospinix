@@ -114,10 +114,10 @@ export default function PrintPrescription() {
   }
   
   return (
-    <div className="p-8 max-w-4xl mx-auto bg-white">
+    <div className="p-8 max-w-4xl mx-auto bg-white text-gray-700">
       {/* Print-only header */}
       <div className="mb-8 text-center border-b pb-4">
-        <h1 className="text-2xl font-bold">Hospital Pharmacy System</h1>
+        <h1 className="text-2xl font-bold">Hospinix</h1>
         <p className="text-gray-600">123 Medical Center Dr., Anytown, USA</p>
         <p className="text-gray-600">Phone: (555) 123-4567</p>
       </div>

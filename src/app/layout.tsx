@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -16,8 +16,10 @@ export const metadata: Metadata = {
   title: "MediCare Pro - Hospital Management System",
   description: "Modern healthcare management solution for hospitals and clinics of all sizes",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#4F46E5",
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

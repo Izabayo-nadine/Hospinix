@@ -28,7 +28,7 @@ export default function ViewPatientPage() {
         const data = await AdminService.getPatient(params.id);
         console.log("Fetched patient data:", data);
         setPatient(data);
-        
+
         // Also fetch patient records using the MedicalRecordService
         try {
           const recordsData = await MedicalRecordService.getMedicalRecords({ patientId: params.id });
@@ -41,7 +41,7 @@ export default function ViewPatientPage() {
       } catch (err) {
         console.error("Error fetching patient:", err);
         setError(err.message || "Failed to load patient information");
-        
+
         // Provide a mock patient if API fails
         if (err.status === 404 || err.message.includes("404")) {
           console.log("Using mock patient data for ID:", params.id);
@@ -122,7 +122,7 @@ export default function ViewPatientPage() {
                   </Link>
                 ) : null}
               </div>
-              
+
               {loading ? (
                 <div className="flex justify-center items-center h-40">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
@@ -158,7 +158,7 @@ export default function ViewPatientPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
                       <h3 className="text-xl font-semibold mb-4 dark:text-white">Contact Information</h3>
                       <div className="space-y-4">
@@ -181,24 +181,24 @@ export default function ViewPatientPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-8 bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold dark:text-white">Medical Records</h3>
-                      <Button 
+                      <Button
                         className="bg-gradient-to-tl from-blue-500 to-violet-500 text-white px-3 py-1 rounded-lg"
                         onClick={handleAddRecord}
                       >
                         Add Record
                       </Button>
                     </div>
-                    
+
                     {recordError && (
                       <div className="mb-4 text-amber-600 bg-amber-100 p-3 rounded-lg">
                         {recordError}
                       </div>
                     )}
-                    
+
                     {records.length > 0 ? (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -219,13 +219,13 @@ export default function ViewPatientPage() {
                                 <td className="px-6 py-4">{record.doctorName}</td>
                                 <td className="px-6 py-4">{record.diagnosis}</td>
                                 <td className="px-6 py-4">
-                                  <button 
+                                  <button
                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-3"
                                     onClick={() => handleViewRecord(record.id)}
                                   >
                                     View
                                   </button>
-                                  <button 
+                                  <button
                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                                     onClick={() => handleEditRecord(record.id)}
                                   >
@@ -243,7 +243,7 @@ export default function ViewPatientPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="mt-8 bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
                     <h3 className="text-xl font-semibold mb-4 dark:text-white">Medical History</h3>
                     <p className="dark:text-white">{patient.medicalHistory || "No medical history available."}</p>

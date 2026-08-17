@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import AuthService from "@/services/auth.service";
 import dynamic from "next/dynamic";
 
@@ -11,10 +11,10 @@ const UserForm = dynamic(() => import("@/components/forms/UserForm"), {
   ssr: false,
 });
 
-export default function AddStaffPage() {
+function AddStaffPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [roleFromUrl, setRoleFromUrl] = useState(null);
+  const [roleFromUrl, setRoleFromUrl] = useState<any>(null);
 
   useEffect(() => {
     // Check if user is authenticated as admin
@@ -31,7 +31,7 @@ export default function AddStaffPage() {
     }
   }, [router, searchParams]);
 
-  const handleSuccess = (userData) => {
+  const handleSuccess = (userData: any) => {
     // Show success message
     alert(`${userData.firstName} ${userData.lastName} has been added successfully!`);
     
@@ -65,5 +65,17 @@ export default function AddStaffPage() {
         />
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function AddStaffPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    }>
+      <AddStaffPageContent />
+    </Suspense>
   );
 } 

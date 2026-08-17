@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { Search, Check, X, Eye, Filter, Calendar } from 'lucide-react';
 import PharmacistService from '@/services/pharmacist.service';

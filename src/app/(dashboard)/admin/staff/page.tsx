@@ -160,7 +160,7 @@ export default function StaffListingPage() {
               name="role"
               value={filters.role}
               onChange={handleFilterChange}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-700"
             >
               <option value="">All Roles</option>
               <option value="DOCTOR">Doctor</option>
@@ -219,7 +219,7 @@ export default function StaffListingPage() {
                 value={filters.search}
                 onChange={handleFilterChange}
                 placeholder="Search by name, email, or specialization"
-                className="flex-1 p-2 border border-gray-300 rounded-l-md"
+                className="flex-1 p-2 border border-gray-300 rounded-l-md text-gray-700"
               />
               <button
                 type="submit"

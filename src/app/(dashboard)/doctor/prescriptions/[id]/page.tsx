@@ -239,7 +239,7 @@ export default function PrescriptionDetailPage() {
         
         {editMode ? (
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-gray-700">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
                 <div className="px-4 py-2 border border-gray-300 rounded-md bg-gray-50">

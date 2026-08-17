@@ -154,9 +154,8 @@ const DoctorService = {
       if (status) params.append("status", status);
       if (search) params.append("search", search);
 
-      const url = `/doctor/patients${
-        params.toString() ? `?${params.toString()}` : ""
-      }`;
+      const url = `/doctor/patients${params.toString() ? `?${params.toString()}` : ""
+        }`;
       console.log(`Making request to: ${url}`);
 
       try {
@@ -263,8 +262,7 @@ const DoctorService = {
       }
 
       console.log(
-        `Fetching appointments with params: ${
-          params.toString() || "no parameters"
+        `Fetching appointments with params: ${params.toString() || "no parameters"
         }`
       );
 
@@ -395,8 +393,7 @@ const DoctorService = {
       }
 
       console.log(
-        `Fetching prescriptions with params: ${
-          params.toString() || "no params"
+        `Fetching prescriptions with params: ${params.toString() || "no params"
         }`
       );
 
@@ -504,16 +501,16 @@ const DoctorService = {
         status: bed.status,
         patient: bed.patient
           ? {
-              id: bed.patient.patientId,
-              name: `${bed.patient.firstName} ${bed.patient.lastName}`,
-              age: calculateAge(bed.patient.dateOfBirth),
-              gender: bed.patient.gender,
-              admissionDate: bed.admissionDate,
-              diagnosis: bed.diagnosis,
-              doctor: bed.doctor
-                ? `Dr. ${bed.doctor.firstName} ${bed.doctor.lastName}`
-                : "Not assigned",
-            }
+            id: bed.patient.patientId,
+            name: `${bed.patient.firstName} ${bed.patient.lastName}`,
+            age: calculateAge(bed.patient.dateOfBirth),
+            gender: bed.patient.gender,
+            admissionDate: bed.admissionDate,
+            diagnosis: bed.diagnosis,
+            doctor: bed.doctor
+              ? `Dr. ${bed.doctor.firstName} ${bed.doctor.lastName}`
+              : "Not assigned",
+          }
           : null,
       }));
 
@@ -584,9 +581,8 @@ const DoctorService = {
           localBedsState[bedIndex].status = "Occupied";
           localBedsState[bedIndex].patient = {
             id: patientData.patientId || patientId,
-            name: `${patientData.firstName || "Unknown"} ${
-              patientData.lastName || "Patient"
-            }`,
+            name: `${patientData.firstName || "Unknown"} ${patientData.lastName || "Patient"
+              }`,
             age: calculateAge(patientData.dateOfBirth) || 30,
             gender: patientData.gender || "Not Specified",
             admissionDate: new Date().toISOString().split("T")[0],
@@ -653,9 +649,8 @@ const DoctorService = {
           localBedsState[bedIndex].status = "Occupied";
           localBedsState[bedIndex].patient = {
             id: patientData.patientId || patientId,
-            name: `${patientData.firstName || "Unknown"} ${
-              patientData.lastName || "Patient"
-            }`,
+            name: `${patientData.firstName || "Unknown"} ${patientData.lastName || "Patient"
+              }`,
             age: calculateAge(patientData.dateOfBirth) || 30,
             gender: patientData.gender || "Not Specified",
             admissionDate: new Date().toISOString().split("T")[0],

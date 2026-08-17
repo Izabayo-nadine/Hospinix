@@ -142,8 +142,8 @@ export default function DoctorPrescriptions() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by patient or medication..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                placeholder="Search by patient, medication..."
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 w-full text-gray-700 pr-6"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -164,12 +164,12 @@ export default function DoctorPrescriptions() {
             <div className="flex space-x-2">
               <input
                 type="date"
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >

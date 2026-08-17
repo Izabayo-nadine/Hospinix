@@ -1,7 +1,7 @@
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PharmacistService from "@/services/pharmacist.service";
 import { getErrorMessage } from "@/utils/apiUtils";
@@ -28,7 +28,7 @@ interface Medicine {
   sideEffects?: string[];
 }
 
-export default function PharmacistMedicines() {
+function PharmacistMedicinesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -358,5 +358,17 @@ export default function PharmacistMedicines() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function PharmacistMedicines() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    }>
+      <PharmacistMedicinesContent />
+    </Suspense>
   );
 } 

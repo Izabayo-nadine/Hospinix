@@ -2,7 +2,6 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthService from "@/services/auth.service";
@@ -13,9 +12,9 @@ type DashboardLayoutProps = {
   title: string;
 };
 
-export default function DashboardLayout({ 
-  userType, 
-  children, 
+export default function DashboardLayout({
+  userType,
+  children,
   title,
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,26 +44,51 @@ export default function DashboardLayout({
     const file = event.target.files?.[0];
     if (file && user) {
       try {
-        // TODO: Implement image upload to backend
         console.log('Uploading image:', file);
         const response = await AuthService.uploadProfileImage(user.id, file);
-        
-        // Assuming the backend returns the updated user object or the new image URL
-        if (response && response.imageUrl) {
-          // Update the user state with the new profile image URL
-          setUser((prevUser: any | null) => ({
-            ...prevUser,
-            profileImage: response.imageUrl
-          }));
-          console.log('Profile image uploaded and user state updated.', response.imageUrl);
+
+        console.log('Upload response:', response);
+
+        // Extract the image URL from various possible response structures
+        let imageUrl = null;
+        if (response?.imageUrl) {
+          imageUrl = response.imageUrl;
+        } else if (response?.profileImage) {
+          imageUrl = response.profileImage;
+        } else if (response?.data?.imageUrl) {
+          imageUrl = response.data.imageUrl;
+        } else if (response?.data?.profileImage) {
+          imageUrl = response.data.profileImage;
+        }
+
+        if (imageUrl) {
+          // Update the user state
+          const updatedUser = {
+            ...user,
+            profileImage: imageUrl
+          };
+          setUser(updatedUser);
+
+          // Also update localStorage to persist the change
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+
+          console.log('Profile image updated successfully:', imageUrl);
+          alert('Profile image uploaded successfully!');
         } else {
-           console.warn('Image upload successful, but no imageUrl returned:', response);
-           // Optionally, refetch user data here if backend doesn't return the URL
+          console.warn('Image uploaded but no URL returned. Refreshing user data...');
+
+          // Fallback: Refresh the entire user object from localStorage
+          // (AuthService.uploadProfileImage should have updated it)
+          const refreshedUser = AuthService.getCurrentUser();
+          if (refreshedUser) {
+            setUser(refreshedUser);
+            console.log('User data refreshed from localStorage');
+          }
         }
 
       } catch (error) {
         console.error('Error uploading image:', error);
-        // Optionally, display an error message to the user
+        alert('Failed to upload profile image. Please try again.');
       }
     }
   };
@@ -84,12 +108,12 @@ export default function DashboardLayout({
     <div className="flex h-screen bg-gray-100">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
-      
+
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-30 w-64 transform bg-indigo-800 transition duration-300 ease-in-out lg:static lg:translate-x-0
@@ -97,7 +121,7 @@ export default function DashboardLayout({
       `}>
         <Sidebar userType={userType} />
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm z-10">
@@ -106,7 +130,7 @@ export default function DashboardLayout({
               {/* Left section with logo and title */}
               <div className="flex items-center space-x-4">
                 {/* Sidebar toggle for mobile */}
-                <button 
+                <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   className="lg:hidden text-gray-500 focus:outline-none"
                 >
@@ -114,7 +138,7 @@ export default function DashboardLayout({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
-                
+
                 {/* Logo and title */}
                 {/* <Link href={`/${userType}`} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                   <div className="relative h-8 w-8">
@@ -122,32 +146,41 @@ export default function DashboardLayout({
                   </div>
                   <h1 className="text-xl font-bold text-indigo-600">Hospinix</h1>
                 </Link> */}
-                
+
                 <h2 className="text-lg font-medium text-gray-700 hidden md:block">{title}</h2>
               </div>
-              
+
               {/* Right section with profile and logout */}
               <div className="flex items-center space-x-4">
                 {/* Profile dropdown */}
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 group focus:outline-none"
                   >
                     <div className="relative">
                       {user.profileImage ? (
-                        <Image 
-                          src={user.profileImage} 
-                          alt="Profile" 
-                          width={40} 
-                          height={40} 
-                          className="rounded-full object-cover"
+                        <img
+                          src={user.profileImage}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover w-10 h-10"
+                          onError={(e) => {
+                            console.error('Failed to load profile image:', user.profileImage);
+                            // Fallback to initials if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
                         />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
-                          {user.firstName.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      ) : null}
+                      <div
+                        className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xl"
+                        style={{ display: user.profileImage ? 'none' : 'flex' }}
+                      >
+                        {user.firstName.charAt(0).toUpperCase()}
+                      </div>
                       <label className="absolute bottom-0 right-0 bg-indigo-500 rounded-full p-1 cursor-pointer hover:bg-indigo-600 transition-colors">
                         <input
                           type="file"
@@ -189,7 +222,7 @@ export default function DashboardLayout({
             </div>
           </div>
         </header>
-        
+
         <main className="flex-1 overflow-y-auto bg-gray-100 p-4 sm:p-6">
           <div className="max-w-7xl mx-auto">
             {children}

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import DoctorService from "@/services/doctor.service";
 
-export default function CreatePrescriptionPage() {
+function CreatePrescriptionPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const patientIdParam = searchParams.get("patientId");
@@ -64,7 +64,7 @@ export default function CreatePrescriptionPage() {
         if (patientsData.length === 0) {
           setErrorMessage("You don't have any patients assigned to you. Please contact the receptionist to assign patients to your account.");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching patients:", error);
         setErrorMessage("Failed to load patients: " + (error.response?.data?.message || error.message || "Unknown error"));
       } finally {
@@ -75,7 +75,7 @@ export default function CreatePrescriptionPage() {
     fetchPatients();
   }, [patientIdParam, patientNameParam, appointmentIdParam]);
   
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -83,7 +83,7 @@ export default function CreatePrescriptionPage() {
     }));
   };
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     
     if (!formData.patientId) {
@@ -138,7 +138,7 @@ export default function CreatePrescriptionPage() {
         }
       }, 3000);  // Increased from 2000ms to 3000ms
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating prescription:", error);
       setErrorMessage(error.response?.data?.message || "Failed to create prescription. Please try again.");
     } finally {
@@ -148,7 +148,7 @@ export default function CreatePrescriptionPage() {
 
   return (
     <DashboardLayout userType="doctor" title="Create New Prescription">
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white shadow rounded-lg p-6 text-gray-700">
         {isFromAppointment && patientNameParam && (
           <div className="p-4 mb-4 bg-blue-50 text-blue-700 rounded-lg">
             <h3 className="font-medium">Creating prescription for appointment</h3>
@@ -186,7 +186,7 @@ export default function CreatePrescriptionPage() {
               >
                 <option value="">Select a patient</option>
                 {patients.length > 0 ? (
-                  patients.map(patient => (
+                  patients.map((patient: any) => (
                     <option key={patient.id} value={patient.id}>
                       {patient.firstName} {patient.lastName} ({patient.patientId})
                     </option>
@@ -333,5 +333,17 @@ export default function CreatePrescriptionPage() {
         </form>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function CreatePrescriptionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    }>
+      <CreatePrescriptionPageContent />
+    </Suspense>
   );
 } 

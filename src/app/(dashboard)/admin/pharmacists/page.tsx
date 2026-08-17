@@ -248,8 +248,8 @@ export default function PharmacistsPage() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by name or email..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full text-gray-700"
+                placeholder="Search by name, email..."
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 w-full text-gray-700 pr-5"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -271,7 +271,7 @@ export default function PharmacistsPage() {
               </svg>
             </div>
             <select
-              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
+              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-grey-700 text-gray-700"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);

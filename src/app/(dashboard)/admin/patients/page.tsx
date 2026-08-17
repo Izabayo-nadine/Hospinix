@@ -2,10 +2,11 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminService from "@/services/admin.service";
 
-export default function PatientsPage() {
+function PatientsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,7 +15,7 @@ export default function PatientsPage() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth) => {
     if (!dateOfBirth) return "N/A";
@@ -27,13 +28,13 @@ export default function PatientsPage() {
     }
     return age;
   };
-  
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         setLoading(true);
         console.log("Fetching patients...");
-        
+
         let response;
         try {
           // Attempt to fetch from API
@@ -42,56 +43,56 @@ export default function PatientsPage() {
           console.error("API error fetching patients:", apiError);
           // Provide consistent mock data
           response = [
-            { 
-              patientId: "P-1001", 
+            {
+              patientId: "P-1001",
               firstName: "Sarah",
               lastName: "Johnson",
-              email: "sarah.johnson@example.com", 
-              phoneNumber: "555-101-2345", 
+              email: "sarah.johnson@example.com",
+              phoneNumber: "555-101-2345",
               dateOfBirth: "1988-06-15",
               gender: "Female",
               bloodGroup: "A+",
               status: "Active"
             },
-            { 
-              patientId: "P-1002", 
+            {
+              patientId: "P-1002",
               firstName: "Robert",
               lastName: "Smith",
-              email: "robert.smith@example.com", 
-              phoneNumber: "555-202-3456", 
+              email: "robert.smith@example.com",
+              phoneNumber: "555-202-3456",
               dateOfBirth: "1961-03-22",
               gender: "Male",
               bloodGroup: "O-",
               status: "Active"
             },
-            { 
-              patientId: "P-1003", 
+            {
+              patientId: "P-1003",
               firstName: "James",
               lastName: "Williams",
-              email: "james.williams@example.com", 
-              phoneNumber: "555-303-4567", 
+              email: "james.williams@example.com",
+              phoneNumber: "555-303-4567",
               dateOfBirth: "1975-09-10",
               gender: "Male",
               bloodGroup: "B+",
               status: "Discharged"
             },
-            { 
-              patientId: "P-1004", 
+            {
+              patientId: "P-1004",
               firstName: "Emily",
               lastName: "Brown",
-              email: "emily.brown@example.com", 
-              phoneNumber: "555-404-5678", 
+              email: "emily.brown@example.com",
+              phoneNumber: "555-404-5678",
               dateOfBirth: "1992-12-05",
               gender: "Female",
               bloodGroup: "AB-",
               status: "Active"
             },
-            { 
-              patientId: "P-1005", 
+            {
+              patientId: "P-1005",
               firstName: "Michael",
               lastName: "Davis",
-              email: "michael.davis@example.com", 
-              phoneNumber: "555-505-6789", 
+              email: "michael.davis@example.com",
+              phoneNumber: "555-505-6789",
               dateOfBirth: "1983-04-18",
               gender: "Male",
               bloodGroup: "O+",
@@ -100,9 +101,9 @@ export default function PatientsPage() {
           ];
           setError("Using sample data for demonstration purposes. API connection not available.");
         }
-        
+
         console.log("Fetched patients:", response);
-        
+
         // Transform the patients data to match the expected structure
         const formattedPatients = response.map(patient => ({
           id: patient.patientId || patient.id,  // First try patientId (from localStorage/mock), then fallback to id
@@ -118,10 +119,10 @@ export default function PatientsPage() {
           // Original patient data for reference
           originalPatient: patient
         }));
-        
+
         console.log("Formatted patients:", formattedPatients);
         setPatients(formattedPatients);
-        
+
         if (!error || error.includes("API")) {
           setError("");
         }
@@ -145,24 +146,24 @@ export default function PatientsPage() {
     if (ageFilter === "all") return true;
     const age = patient.age;
     if (typeof age !== 'number') return false;
-    
+
     if (ageFilter === "0-18") return age >= 0 && age <= 18;
     if (ageFilter === "19-35") return age >= 19 && age <= 35;
     if (ageFilter === "36-50") return age >= 36 && age <= 50;
     if (ageFilter === "51-65") return age >= 51 && age <= 65;
     if (ageFilter === "65+") return age > 65;
-    
+
     return true;
   };
 
   const filteredPatients = patients
-    .filter(patient => 
+    .filter(patient =>
       (statusFilter === "all" || patient.status === statusFilter) &&
       getAgeFilter(patient) &&
-      (searchQuery === "" || 
-       patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       patient.id.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+      (searchQuery === "" ||
+        patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        patient.id.toString().toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
   return (
@@ -172,7 +173,7 @@ export default function PatientsPage() {
           <span className="block">{error}</span>
         </div>
       )}
-      
+
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mb-6">
           <h2 className="text-lg font-medium text-gray-900">Patients Directory</h2>
@@ -180,8 +181,8 @@ export default function PatientsPage() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by name, email, or ID..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                placeholder="Search by name, email,..."
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 w-full text-gray-700 pr-5"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -201,7 +202,7 @@ export default function PatientsPage() {
             </div>
             <div className="flex space-x-2">
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700"
                 value={ageFilter}
                 onChange={(e) => setAgeFilter(e.target.value)}
               >
@@ -213,7 +214,7 @@ export default function PatientsPage() {
                 <option value="65+">65+ years</option>
               </select>
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -230,7 +231,7 @@ export default function PatientsPage() {
             </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -269,26 +270,25 @@ export default function PatientsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.lastVisit}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.doctor}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          patient.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${patient.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
                           {patient.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
-                        <button 
+                        <button
                           className="text-indigo-600 hover:text-indigo-900"
                           onClick={() => router.push(`/admin/patients/${patient.id}`)}
                         >
                           View
                         </button>
-                        <button 
+                        <button
                           className="text-indigo-600 hover:text-indigo-900"
                           onClick={() => router.push(`/admin/patients/${patient.id}/edit`)}
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
                           className="text-indigo-600 hover:text-indigo-900"
                           onClick={() => router.push(`/admin/patients/${patient.id}/history`)}
                         >
@@ -300,13 +300,13 @@ export default function PatientsPage() {
                 </tbody>
               </table>
             </div>
-            
+
             {filteredPatients.length === 0 && (
               <div className="text-center py-4 text-gray-500">
                 No patients found matching your criteria.
               </div>
             )}
-            
+
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-gray-700">
                 Showing <span className="font-medium">{filteredPatients.length}</span> of <span className="font-medium">{patients.length}</span> patients
@@ -317,4 +317,12 @@ export default function PatientsPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+export default function PatientsPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <PatientsPageContent />
+    </Suspense>
+  );
+}

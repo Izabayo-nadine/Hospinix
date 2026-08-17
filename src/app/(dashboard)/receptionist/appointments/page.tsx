@@ -114,7 +114,7 @@ export default function AppointmentsPage() {
               <input
                 type="text"
                 placeholder="Search appointments..."
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full text-gray-700"
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 w-full text-gray-700 pr-6"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -134,7 +134,7 @@ export default function AppointmentsPage() {
             </div>
             <div className="flex space-x-2">
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700" 
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700" 
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               >
@@ -144,7 +144,7 @@ export default function AppointmentsPage() {
                 ))}
               </select>
               <select
-                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-700" 
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-1 focus:ring-indigo-500 focus:border-gray-700 text-gray-700" 
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
