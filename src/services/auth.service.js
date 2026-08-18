@@ -46,7 +46,7 @@ const AuthService = {
     try {
       const response = await api.get("/auth/validate");
       return response.data;
-    } catch (error) {
+    } catch {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       return null;
@@ -86,7 +86,7 @@ const AuthService = {
       const formData = new FormData();
       formData.append("imageFile", imageFile);
 
-      console.log('Uploading profile image for user:', userId);
+      console.log("Uploading profile image for user:", userId);
 
       const response = await api.post(
         `/admin/users/${userId}/profile-image`,
@@ -95,27 +95,27 @@ const AuthService = {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
-      console.log('Upload response:', response.data);
+      console.log("Upload response:", response.data);
 
       // Extract imageUrl from response
       const imageUrl = response.data.imageUrl || response.data.profileImage;
 
       if (!imageUrl) {
-        console.error('No imageUrl in response:', response.data);
-        throw new Error('No image URL returned from server');
+        console.error("No imageUrl in response:", response.data);
+        throw new Error("No image URL returned from server");
       }
 
       // Construct full URL (backend base URL + image path)
-      const baseURL = api.defaults.baseURL || 'http://localhost:8080/api';
-      const backendBaseURL = baseURL.replace('/api', ''); // Remove /api to get base
-      const fullImageUrl = imageUrl.startsWith('http')
+      const baseURL = api.defaults.baseURL || "http://localhost:8080/api";
+      const backendBaseURL = baseURL.replace("/api", ""); // Remove /api to get base
+      const fullImageUrl = imageUrl.startsWith("http")
         ? imageUrl
         : `${backendBaseURL}${imageUrl}`;
 
-      console.log('Full image URL:', fullImageUrl);
+      console.log("Full image URL:", fullImageUrl);
 
       // Update user data in localStorage with the new profile image URL
       const currentUserStr = localStorage.getItem("user");
@@ -133,7 +133,7 @@ const AuthService = {
       return {
         ...response.data,
         imageUrl: fullImageUrl,
-        profileImage: fullImageUrl
+        profileImage: fullImageUrl,
       };
     } catch (error) {
       console.error("Error uploading profile image:", error);

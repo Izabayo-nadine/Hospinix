@@ -8,31 +8,74 @@ import { useRouter } from "next/navigation";
 import AuthService from "@/services/auth.service";
 import PieChart from "@/components/PieChart";
 
+interface Appointment {
+  id?: number | string;
+  appointmentId?: number | string;
+  patient?: {
+    firstName?: string;
+    lastName?: string;
+  };
+  patientName?: string;
+  firstName?: string;
+  lastName?: string;
+  doctor?: {
+    firstName?: string;
+    lastName?: string;
+    specialization?: string;
+  };
+  doctorName?: string;
+  department?: string;
+  appointmentDateTime?: string;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  status?: string;
+  notes?: string;
+}
+
+interface StaffMember {
+  id: number | string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  role: string;
+  isActive?: boolean;
+  status?: string;
+  createdAt?: string;
+  joined?: string;
+}
+
+
+type DashboardStats = {
+  totalDoctors: number;
+  totalPharmacists: number;
+  totalReceptionists: number;
+  totalPatients: number;
+  activePatients: number;
+  dischargedPatients: number;
+  totalAppointments: number;
+  scheduledAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
+  totalMedicines: number;
+  totalCompanies: number;
+  totalPrescriptions: number;
+  totalDepartments: number;
+  hospitalBeds: number;
+  monthlySurgeries: number;
+  patientSatisfaction: string;
+  totalRevenue?: number;
+  paidRevenue?: number;
+  pendingRevenue?: number;
+  netProfit?: number;
+  [key: string]: string | number | undefined;
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<{
-    totalDoctors: number;
-    totalPharmacists: number;
-    totalReceptionists: number;
-    totalPatients: number;
-    activePatients: number;
-    dischargedPatients: number;
-    totalAppointments: number;
-    scheduledAppointments: number;
-    completedAppointments: number;
-    cancelledAppointments: number;
-    totalMedicines: number;
-    totalCompanies: number;
-    totalPrescriptions: number;
-    // Facility data from backend
-    totalDepartments: number;
-    hospitalBeds: number;
-    monthlySurgeries: number;
-    patientSatisfaction: string;
-  }>({
+  const [stats, setStats] = useState<DashboardStats>({
     totalDoctors: 0,
     totalPharmacists: 0,
     totalReceptionists: 0,
@@ -50,9 +93,13 @@ export default function AdminDashboard() {
     hospitalBeds: 0,
     monthlySurgeries: 0,
     patientSatisfaction: '',
+    totalRevenue: 0,
+    paidRevenue: 0,
+    pendingRevenue: 0,
+    netProfit: 0,
   });
-  const [recentStaff, setRecentStaff] = useState([]);
-  const [appointments, setAppointments] = useState([]);
+  const [recentStaff, setRecentStaff] = useState<StaffMember[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -85,17 +132,16 @@ export default function AdminDashboard() {
           totalAppointments: Number(dashboardStats.totalAppointments) || 0,
           totalMedicines: Number(dashboardStats.totalMedicines) || 0,
         };
-        setStats(safeStats);
+        setStats(safeStats as DashboardStats);
 
         // Fetch staff for "Recent Staff" widget
         const staffData = await AdminService.getUsers({ active: true });
-        setRecentStaff(staffData.slice(0, 5)); // Just take the first 5
+        setRecentStaff((Array.isArray(staffData) ? staffData : []) as StaffMember[]);
 
         // Fetch appointments data
         try {
           const appointmentsData = await DataService.getAllAppointments();
-          console.log("Raw appointments data:", appointmentsData);
-          setAppointments(appointmentsData);
+          setAppointments(Array.isArray(appointmentsData) ? (appointmentsData as Appointment[]) : []);
         } catch (err) {
           console.error('Error loading appointments data:', err);
         }
@@ -119,12 +165,12 @@ export default function AdminDashboard() {
     { name: "Total Medicines", value: stats.totalMedicines || "0", bg: "bg-green-50", text: "text-green-700" },
   ];
 
-  const fallbackRecentStaff = [
-    { id: 1, name: "Dr. Sarah Johnson", role: "Cardiologist", status: "Active", joined: "2023-08-15" },
-    { id: 2, name: "Dr. Michael Chen", role: "Neurologist", status: "Active", joined: "2023-09-01" },
-    { id: 3, name: "Emily Rodriguez", role: "Receptionist", status: "Active", joined: "2023-10-12" },
-    { id: 4, name: "Robert Williams", role: "Pharmacist", status: "On Leave", joined: "2023-07-22" },
-    { id: 5, name: "Lisa Thompson", role: "Nurse", status: "Active", joined: "2023-11-05" },
+  const fallbackRecentStaff: StaffMember[] = [
+    { id: 1, firstName: "Sarah", lastName: "Johnson", name: "Dr. Sarah Johnson", role: "Cardiologist", isActive: true, status: "Active", createdAt: "2023-08-15", joined: "2023-08-15" },
+    { id: 2, firstName: "Michael", lastName: "Chen", name: "Dr. Michael Chen", role: "Neurologist", isActive: true, status: "Active", createdAt: "2023-09-01", joined: "2023-09-01" },
+    { id: 3, firstName: "Emily", lastName: "Rodriguez", name: "Emily Rodriguez", role: "Receptionist", isActive: true, status: "Active", createdAt: "2023-10-12", joined: "2023-10-12" },
+    { id: 4, firstName: "Robert", lastName: "Williams", name: "Robert Williams", role: "Pharmacist", isActive: false, status: "On Leave", createdAt: "2023-07-22", joined: "2023-07-22" },
+    { id: 5, firstName: "Lisa", lastName: "Thompson", name: "Lisa Thompson", role: "Nurse", isActive: true, status: "Active", createdAt: "2023-11-05", joined: "2023-11-05" },
   ];
 
   const displayStaff = recentStaff.length > 0 ? recentStaff : fallbackRecentStaff;
@@ -134,12 +180,12 @@ export default function AdminDashboard() {
   now.setHours(0, 0, 0, 0); // Start of today
 
   const filteredAppointments = appointments.length > 0
-    ? appointments.filter((app: any) => {
-      const appDate = app.appointmentDateTime ? new Date(app.appointmentDateTime) : new Date(app.appointmentDate);
+    ? appointments.filter((app: Appointment) => {
+      const appDate = app.appointmentDateTime ? new Date(app.appointmentDateTime) : new Date(app.appointmentDate || Date.now());
       return appDate >= now;
-    }).sort((a: any, b: any) => {
-      const dateA = a.appointmentDateTime ? new Date(a.appointmentDateTime) : new Date(a.appointmentDate);
-      const dateB = b.appointmentDateTime ? new Date(b.appointmentDateTime) : new Date(b.appointmentDate);
+    }).sort((a: Appointment, b: Appointment) => {
+      const dateA = a.appointmentDateTime ? new Date(a.appointmentDateTime) : new Date(a.appointmentDate ?? Date.now());
+      const dateB = b.appointmentDateTime ? new Date(b.appointmentDateTime) : new Date(b.appointmentDate ?? Date.now());
       return dateA.getTime() - dateB.getTime();
     })
     : [];
@@ -147,14 +193,14 @@ export default function AdminDashboard() {
   // Only show real appointments - no fallback data
   const displayAppointments = filteredAppointments;
 
-  const handleDeleteStaff = async (id) => {
+  const handleDeleteStaff = async (id: number | string) => {
     if (confirm("Are you sure you want to delete this staff member? This action cannot be undone.")) {
       try {
         await AdminService.deleteUser(id);
 
         // Refresh both staff data and dashboard statistics
         const staffData = await AdminService.getUsers({ active: true });
-        setRecentStaff(staffData.slice(0, 5)); // Just take the first 5
+        setRecentStaff(staffData.slice(0, 5));
 
         // Refresh dashboard statistics
         const dashboardStats = await AdminService.getDashboardStats();
@@ -166,23 +212,18 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleToggleStaffActivation = async (id, currentActiveStatus) => {
+  const handleToggleStaffActivation = async (id: number | string, currentActiveStatus: boolean | undefined) => {
     try {
-      // Log the current status and what we're changing it to
-      console.log(`Toggling staff activation - Current status: ${currentActiveStatus}, changing to: ${!currentActiveStatus}`);
-
-      // Use explicit Boolean conversion to avoid any type issues
+      const isActive = !!currentActiveStatus;
       const updateData = {
-        isActive: Boolean(!currentActiveStatus)
+        isActive: !isActive
       };
-
-      console.log('Update payload:', updateData);
 
       await AdminService.updateUser(id, updateData);
 
       // Refresh both staff data and dashboard statistics
       const staffData = await AdminService.getUsers({ active: true });
-      setRecentStaff(staffData.slice(0, 5)); // Just take the first 5
+      setRecentStaff(staffData.slice(0, 5));
 
       // Refresh dashboard statistics
       const dashboardStats = await AdminService.getDashboardStats();
@@ -194,9 +235,8 @@ export default function AdminDashboard() {
   };
 
   const handleGenerateReport = () => {
-    // Added meaningful columns based on user request (e.g. Payment Status)
     const headers = ["Appointment ID", "Patient", "Doctor", "Department", "Date", "Time", "Status", "Payment Status", "Notes"];
-    const rows = displayAppointments.map(app => {
+    const rows = displayAppointments.map((app: Appointment) => {
       const patientName = app.patient ? `${app.patient.firstName || ''} ${app.patient.lastName || ''}`.trim() : (app.patientName || "Unknown");
       const doctorName = app.doctor ? `Dr. ${app.doctor.firstName || ''} ${app.doctor.lastName || ''}`.trim() : (app.doctorName || "Unknown");
       const department = app.department || (app.doctor?.specialization) || "General";
@@ -204,7 +244,6 @@ export default function AdminDashboard() {
       const time = app.appointmentDateTime ? new Date(app.appointmentDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (app.appointmentTime || "N/A");
       const status = app.status || "Scheduled";
 
-      // Mock data for columns that might not exist in the basic API response yet
       const paymentStatus = "Pending";
       const notes = app.notes || "No additional notes";
 
@@ -228,16 +267,16 @@ export default function AdminDashboard() {
   };
 
   // Helper to format currency
-  const formatCurrency = (amount: any) => {
+  const formatCurrency = (amount: string | number | undefined | null) => {
     const num = Number(amount) || 0;
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
   };
 
   const financialStats = [
-    { label: "Total Revenue", value: formatCurrency(stats['totalRevenue'] || 0), change: "+12%", trend: "up" },
-    { label: "Paid Revenue", value: formatCurrency(stats['paidRevenue'] || 0), change: "+8%", trend: "up" },
-    { label: "Pending (Receivables)", value: formatCurrency(stats['pendingRevenue'] || 0), change: "-2%", trend: "down" },
-    { label: "Net Profit (Est.)", value: formatCurrency(stats['netProfit'] || 0), change: "+15%", trend: "up" },
+    { label: "Total Revenue", value: formatCurrency(stats.totalRevenue ?? 0), change: "+12%", trend: "up" },
+    { label: "Paid Revenue", value: formatCurrency(stats.paidRevenue ?? 0), change: "+8%", trend: "up" },
+    { label: "Pending (Receivables)", value: formatCurrency(stats.pendingRevenue ?? 0), change: "-2%", trend: "down" },
+    { label: "Net Profit (Est.)", value: formatCurrency(stats.netProfit ?? 0), change: "+15%", trend: "up" },
   ];
 
   if (loading) {

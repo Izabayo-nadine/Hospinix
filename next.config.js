@@ -2,7 +2,16 @@
 const nextConfig = {
   /* config options here */
   images: {
-    domains: ["localhost", "placehold.co"],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,

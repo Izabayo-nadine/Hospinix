@@ -11,7 +11,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 15000,
+  timeout: 60000,
 });
  
 // Add ping function to test server connectivity
@@ -67,7 +67,7 @@ api.shouldUseMockData = async () => {
   try {
     const health = await api.pingServer();
     return !health.isConnected;
-  } catch (error) {
+  } catch (_error) {
     return true;
   }
 };

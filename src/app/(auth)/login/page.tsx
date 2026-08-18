@@ -47,7 +47,7 @@ export default function Login() {
       }
 
       router.push(dashboardPath);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
       // Use a generic error message for security
       setError("Invalid email or password");
@@ -162,7 +162,7 @@ export default function Login() {
         </div>
 
         {/* Right side - Graphics */}
-        <div className="hidden md:block md:w-1/2 bg-indigo-600 p-12 flex flex-col justify-center">
+        <div className="hidden md:flex md:w-1/2 bg-indigo-600 p-12 flex-col justify-center">
           <div className="text-white mb-6">
             <h2 className="text-2xl font-bold mb-2">Hospinix</h2>
             <p className="text-indigo-200">Streamline your healthcare operations with our comprehensive system designed for medical professionals.</p>
